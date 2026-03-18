@@ -1,6 +1,6 @@
 // TripGo Configuration
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:8080/api' 
+    ? 'http://localhost:8081/api' 
     : 'https://tripgo-backend.onrender.com/api'; // Replace with your Render URL after deployment
 
 const AUTH_API_URL = `${API_BASE_URL}/auth`;

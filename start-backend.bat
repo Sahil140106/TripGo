@@ -1,5 +1,5 @@
 @echo off
 echo Starting TripGo Backend...
-cd backend
+cd /d "%~dp0backend"
 .\mvnw.cmd spring-boot:run
 pause
