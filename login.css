@@ -1,0 +1,151 @@
+:root {
+    --primary-blue-gradient: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    --accent-violet-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
+    --light-bg: #f8fafc;
+    --border-color: #e2e8f0;
+}
+
+body {
+    font-family: sans-serif;
+    background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.signup-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.logo { 
+    margin-bottom: 15px; 
+}
+
+.logo img {
+    max-height: 80px;
+}
+
+h2 { margin: 10px 0; color: #1e293b; font-size: 26px; }
+p { color: #64748b; margin-bottom: 25px; font-size: 14px; }
+
+.role-selector {
+    display: flex;
+    background: #f1f5f9;
+    padding: 5px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.role-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.3s ease;
+}
+
+.role-btn.active {
+    background: white;
+    color: #1e293b;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.form-group { text-align: left; margin-bottom: 18px; }
+label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 10px;
+    box-sizing: border-box;
+    background: #fdfdfd;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.password-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-field-wrapper input {
+    padding-right: 45px;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    outline: none;
+    z-index: 10;
+}
+
+.toggle-password-btn:hover {
+    color: #2563eb;
+}
+
+.toggle-password-btn i {
+    font-size: 16px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary-blue-gradient);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.submit-btn:hover { transform: translateY(-1px); }
+
+.footer-text {
+    margin-top: 35px; /* Added more distance here */
+    font-size: 14px;
+    color: #64748b;
+}
+
+.footer-text a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.footer-text a:hover {
+    text-decoration: underline;
+}

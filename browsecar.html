@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripGo | Browse Cars</title>
+    <link rel="stylesheet" href="browsecar.css">
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="auth.js"></script>
+    <script>
+        // Enforce authentication immediately
+        auth.requireAuth('browsecar.html');
+    </script>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="logo-removebg-preview.png" alt="TripGo Logo" class="logo-img">
+                </div>
+                <p>Renter Pane</p>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Back to Home
+                </a>
+                <a href="#" id="browseCarsLink" class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+                        <circle cx="7" cy="17" r="2" />
+                        <path d="M9 17h6" />
+                        <circle cx="17" cy="17" r="2" />
+                    </svg>
+                    <span>Browse Cars</span>
+                </a>
+                <a href="#" id="tripHandoverLink" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <polyline points="17 11 19 13 23 9"></polyline>
+                    </svg>
+                    Trip Handover
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <h2 id="pageTitle">Browse Cars</h2>
+                <div class="header-right" id="nav-auth-section">
+                    <!-- Profile dropdown will be injected here -->
+                </div>
+            </header>
+
+            <div id="browseCarSection">
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <input type="text" id="carSearch" placeholder="Search cars...">
+                    </div>
+                    <div class="select-box">
+                        <select id="locationFilter">
+                            <option value="">All Locations</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Bangalore">Bangalore</option>
+                        </select>
+                    </div>
+                    <div class="select-box">
+                        <select id="typeFilter">
+                            <option value="">All Types</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Hatchback">Hatchback</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Luxury">Luxury</option>
+                        </select>
+                    </div>
+                    <div class="price-range-container">
+                        <div class="price-labels">
+                            Price up to: <span id="maxPriceDisplay">₹10000</span>
+                        </div>
+                        <div class="range-slider">
+                            <div class="range-fill" id="rangeFill"></div>
+                            <input type="range" id="maxPriceFilter" min="500" max="10000" value="10000" step="100">
+                        </div>
+                    </div>
+                </div>
+
+                <section class="car-grid" id="carGrid">
+                    <!-- Cars will be loaded here dynamically -->
+                </section>
+            </div>
+
+            <div id="tripHandoverSection" style="display: none;">
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <input type="text" id="handoverSearch" placeholder="Search handovers...">
+                    </div>
+                    <div class="select-box">
+                        <select id="handoverLocationFilter">
+                            <option value="">All Locations</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Bangalore">Bangalore</option>
+                        </select>
+                    </div>
+                    <div class="select-box">
+                        <select id="handoverTypeFilter">
+                            <option value="">All Types</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Hatchback">Hatchback</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Luxury">Luxury</option>
+                        </select>
+                    </div>
+                    <div class="price-range-container">
+                        <div class="price-labels">
+                            Price up to: <span id="handoverMaxPriceDisplay">₹10000</span>
+                        </div>
+                        <div class="range-slider">
+                            <div class="range-fill" id="handoverRangeFill"></div>
+                            <input type="range" id="handoverMaxPriceFilter" min="500" max="10000" value="10000" step="100">
+                        </div>
+                    </div>
+                </div>
+
+                <section class="car-grid" id="handoverGrid">
+                    <!-- Handovers will be loaded here dynamically -->
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #64748b;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <p>Loading active handovers...</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Car Details Modal -->
+    <div class="modal-overlay" id="carModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div class="card-wrapper">
+                <div class="image-section">
+                    <img id="modalImg" src="" alt="Car Image">
+                </div>
+                <div class="details-section">
+                    <div class="header-info">
+                        <h1 id="modalTitle"></h1>
+                        <p class="meta-info" id="modalMeta"></p>
+                    </div>
+
+                    <div class="price-tag">
+                        <span class="currency" id="modalPrice"></span><span class="duration"> /day</span>
+                    </div>
+
+                    <div class="specs-grid">
+                        <div class="spec-box">
+                            <span class="label">Fuel Type</span>
+                            <span class="value" id="modalFuel"></span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="label">Seats</span>
+                            <span class="value" id="modalSeats"></span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="label">Transmission</span>
+                            <span class="value" id="modalTrans"></span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="label">Luggage</span>
+                            <span class="value" id="modalLuggage"></span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="label">Year</span>
+                            <span class="value" id="modalYear">2024</span>
+                        </div>
+                    </div>
+
+                    <div class="owner-card">
+                        <div class="owner-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div class="owner-details">
+                            <p class="owner-name" id="modalOwnerName"></p>
+                            <p class="owner-rating">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"
+                                    style="color: #f59e0b; margin-right: 4px;">
+                                    <polygon
+                                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                                    </polygon>
+                                </svg>
+                                4.9 · 23 trips completed
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #1e293b; font-size: 13px; text-transform: uppercase;">Trip Destination</label>
+                        <input type="text" id="modalDestinationHub" placeholder="Enter your destination..." style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; transition: border-color 0.3s; background: white;">
+                    </div>
+
+                    <button class="book-btn" id="modalBookBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Book Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- High-Fidelity Handover Modal -->
+    <div class="handover-modal-overlay" id="handoverModal">
+        <div class="handover-modal-v2">
+            <div class="h-modal-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #1e293b;">🤝 Trip Handover Request
+                    </h2>
+                    <button class="h-close-btn" id="closeHandoverModalV2">×</button>
+                </div>
+                <div class="h-progress-container">
+                    <div class="h-progress-bar" id="h-progress-bar" style="width: 40%;"></div>
+                </div>
+            </div>
+
+            <div class="h-modal-body" id="h-step-1">
+                <!-- Reference Card -->
+                <div class="h-ref-card">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div class="h-car-icon-wrapper" id="h-car-image-container">
+                            <img id="h-modal-car-img" src="" alt="Car"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: none;">
+                            <svg id="h-modal-car-svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="#2563eb" stroke-width="2">
+                                <path
+                                    d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+                                <circle cx="7" cy="17" r="2" />
+                                <path d="M9 17h6" />
+                                <circle cx="17" cy="17" r="2" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p
+                                style="margin: 0; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">
+                                Active Booking</p>
+                            <h4 style="margin: 0; font-size: 16px; color: #1e293b;" id="h-display-car">Mahindra Thar
+                            </h4>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: #475569; font-weight: 500;"
+                                id="h-display-owner">Owner: Loading...</p>
+                            <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;" id="h-display-owner-email">
+                                Email: Loading...</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="h-booking-id" id="h-display-id">#TG-1024</span>
+                    </div>
+                </div>
+
+                <form id="handoverCompleteForm">
+                    <!-- Compatibility Hidden Fields -->
+                    <input type="hidden" id="formBookingId">
+                    <input type="hidden" id="formCarModel">
+                    <input type="hidden" id="formRenterName">
+                    <input type="hidden" id="formPickupDate">
+                    <input type="hidden" id="formReturnDate">
+                    <input type="hidden" id="formCarImage">
+                    <input type="hidden" id="formOwnerName">
+                    <input type="hidden" id="formOwnerEmail">
+                    <input type="hidden" id="formRenterEmail">
+                    <input type="hidden" id="handoverLocation">
+                    <input type="hidden" id="handoverDestination">
+                    <input type="hidden" id="handoverCostSharing">
+
+                    <div class="h-input-group"
+                        style="background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 20px;">
+                        <label style="color: #1e293b; font-weight: 700; font-size: 13px; margin-bottom: 4px;">🛡️ Actual
+                            Car Owner Details</label>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span id="h-owner-name-display"
+                                style="font-size: 14px; font-weight: 600; color: #475569;">Name: Loading...</span>
+                            <span id="h-owner-email-display" style="font-size: 13px; color: #64748b;">Email:
+                                Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="h-input-group"
+                        style="background: #f0fdf4; padding: 12px; border-radius: 12px; border: 1px dashed #22c55e; margin-bottom: 20px;">
+                        <label style="color: #166534; font-weight: 700; font-size: 13px; margin-bottom: 4px;">📍 Fixed
+                            Return Destination</label>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span id="h-fixed-destination-display"
+                                style="font-size: 14px; font-weight: 600; color: #166534;">Loading...</span>
+                            <p style="margin: 0; font-size: 11px; color: #15803d;">This car must be returned to the
+                                owner's original location.</p>
+                        </div>
+                    </div>
+
+                    <!-- Current Renter Display -->
+                    <div class="h-input-group" style="margin-bottom: 20px;">
+                        <label
+                            style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px;">Current
+                            Renter</label>
+                        <div id="h-current-renter-display"
+                            style="font-size: 15px; font-weight: 600; color: #1e293b; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span id="h-renter-name-text">Loading...</span>
+                        </div>
+                    </div>
+
+                    <!-- Email Input -->
+                    <div class="h-input-group">
+                        <label><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" style="margin-right: 6px;">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                </path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg> Email</label>
+                        <input type="email" id="h-recipient-email" placeholder="search by email..." required>
+                    </div>
+
+                    <!-- Handover Hub (Location Selection) -->
+                    <div class="h-input-group">
+                        <label><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" style="margin-right: 6px;">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg> Select Handover Hub</label>
+                        <select id="h-handover-location-select"
+                            style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; font-size: 14px; color: #1e293b; outline: none;"
+                            required>
+                            <option value="" disabled selected>Choose a verified hub...</option>
+                            <option value="IGI Airport T3, Delhi">Indira Gandhi International Airport (T3)</option>
+                            <option value="New Delhi Railway Station">New Delhi Railway Station</option>
+                            <option value="Rajiv Chowk Metro Station">Rajiv Chowk Metro Station</option>
+                            <option value="Noida City Centre">Noida City Centre</option>
+                            <option value="Cyber Hub, Gurgaon">Cyber Hub, Gurgaon</option>
+                        </select>
+                    </div>
+
+                    <!-- Destination Hub (Fixed) -->
+                    <div class="h-input-group">
+                        <label><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" style="margin-right: 6px;">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg> Destination Hub</label>
+                        <input type="text" id="h-destination-hub-display" readonly 
+                               style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; font-size: 14px; color: #1e293b; outline: none; cursor: not-allowed;"
+                               value="Loading...">
+                    </div>
+
+                    <!-- Date and Time Picker (Dual Column) -->
+                    <div class="h-grid-2">
+                        <div class="h-input-group">
+                            <label><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="margin-right: 6px;">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg> Handover Start Date</label>
+                            <input type="date" id="h-handover-date" required>
+                        </div>
+                        <div class="h-input-group">
+                            <label><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="margin-right: 6px;">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg> Handover Return Date</label>
+                            <input type="date" id="h-handover-return-date" required>
+                        </div>
+                    </div>
+
+                    <div class="h-input-group">
+                        <label><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" style="margin-right: 6px;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg> Handover Time</label>
+                        <input type="time" id="h-handover-time" required>
+                    </div>
+
+
+                    <!-- Security & Legal -->
+                    <div class="h-checkbox-group">
+                        <input type="checkbox" id="h-liability-transfer" required>
+                        <label for="h-liability-transfer">
+                            I agree to the <strong>Liability Transfer Policy</strong>. I confirm that the vehicle is in
+                            good condition and all existing damages are documented.
+                        </label>
+                    </div>
+
+                    <div id="handover-error-message"
+                        style="display: none; color: #ef4444; font-size: 13px; margin-bottom: 15px; background: #fef2f2; padding: 10px; border-radius: 8px; border: 1px solid #fee2e2;">
+                    </div>
+
+                    <button type="submit" class="h-submit-btn" id="h-submit-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="margin-right: 8px;">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        List for Handover @ ₹0
+                    </button>
+
+                    <textarea id="handoverNotes" style="display: none;"></textarea>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Handover Details Modal -->
+    <div class="handover-modal-overlay" id="handoverDetailsModal">
+        <div class="h-modal-content">
+            <span class="modal-close" onclick="closeHandoverDetailsModal()">&times;</span>
+            <div class="card-wrapper">
+                <div class="image-section">
+                    <img id="hd-image" src="" alt="Car Image">
+                </div>
+                <div class="details-section">
+                    <div class="header-info">
+                        <h1 id="hd-car-model"></h1>
+                        <p class="meta-info" id="hd-meta"></p>
+                    </div>
+
+                    <div class="price-tag">
+                        <span class="currency" id="hd-price"></span>
+                        <p style="margin: 4px 0 0 0; font-size: 11px; color: #64748b; font-weight: 600;">Approved @ 75%
+                            of listing price</p>
+                    </div>
+
+                    <div class="timeline-section">
+                        <span class="timeline-label">Handover Schedule</span>
+                        <div class="timeline-item">
+                            <div class="timeline-dot pickup"></div>
+                            <div class="timeline-content">
+                                <strong>Pickup:</strong> 
+                                <input type="date" id="hd-pickup-date-input" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 8px; font-size: 13px; color: #1e293b; outline: none; transition: border-color 0.2s;">
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot return"></div>
+                            <div class="timeline-content">
+                                <strong>Return:</strong> 
+                                <input type="date" id="hd-return-date-input" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 8px; font-size: 13px; color: #1e293b; outline: none; transition: border-color 0.2s;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="specs-grid">
+                        <div class="spec-box">
+                            <span class="label">Fuel Type</span>
+                            <span class="value" id="hd-fuel"></span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="label">Seats</span>
+                            <span class="value" id="hd-seats"></span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="label">Transmission</span>
+                            <span class="value" id="hd-trans"></span>
+                        </div>
+                        <div class="spec-box">
+                            <span class="label">Luggage</span>
+                            <span class="value" id="hd-luggage"></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <span class="timeline-label">Handover Participants</span>
+                        <div class="owner-card" style="margin-bottom: 12px;">
+                            <div class="owner-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="owner-details">
+                                <p class="owner-name" id="hd-owner-name"></p>
+                                <p class="owner-rating">Original Owner · <span id="hd-owner-email"></span></p>
+                            </div>
+                        </div>
+                        <div class="owner-card" style="margin-bottom: 0; background: #f0f9ff; border-color: #bae6fd;">
+                            <div class="owner-icon" style="background: #2563eb;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="8.5" cy="7" r="4"></circle>
+                                    <polyline points="17 11 19 13 23 9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="owner-details">
+                                <p class="owner-name" id="hd-renter-name"></p>
+                                <p class="owner-rating">Handed Over By · <span id="hd-renter-email"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="hd-notes-container"
+                        style="background: #fffbeb; border: 1px solid #fde68a; padding: 16px; border-radius: 16px; margin-bottom: 24px;">
+                        <span class="timeline-label" style="color: #92400e;">Renter's Notes</span>
+                        <p id="hd-notes" style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;"></p>
+                    </div>
+
+                    <button class="book-btn" id="hd-book-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Book Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Centralized Floating Notification Bell -->
+    <div class="icon-btn floating-bell" id="notificationBtn" title="Notifications">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="notification-badge" id="notifBadge">0</span>
+
+        <!-- Upward Opening Floating Dropdown -->
+        <div class="profile-dropdown floating-dropdown" id="notificationDropdown">
+            <div class="dropdown-header">
+                <span>Notifications</span>
+                <span id="markAllRead" style="font-size: 11px; color: #2563eb; cursor: pointer; font-weight: 600;">Mark
+                    all read</span>
+            </div>
+            <div id="notificationList" style="max-height: 350px; overflow-y: auto;">
+                <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 13px;">No new notifications
+                </div>
+            </div>
+            <div style="border-top: 1px solid #f1f5f9; padding: 12px; text-align: center; background: #fff;">
+                <a href="profile.html?view=messages"
+                    style="color: #2563eb; font-size: 13px; font-weight: 700; text-decoration: none; display: block; padding: 5px;">View
+                    All Dashboard Messages</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="profile.js"></script>
+    <script src="browsecar.js"></script>
+</body>
+
+</html>

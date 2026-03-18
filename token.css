@@ -1,0 +1,213 @@
+:root {
+    --primary-blue: #2563eb;
+    --primary-gradient: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    --bg-light: #f8fafc;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --card-shadow-premium: 0 20px 40px rgba(37, 99, 235, 0.15);
+}
+
+/* My Wallet & Transactions Section */
+#transactions-view {
+    padding: 20px;
+    background: #fdfdfd;
+}
+
+#transactions-view .header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#transactions-view .header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+#transactions-view .header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+/* Premium Balance Card - Rebranded to Blue/White */
+.premium-balance-card {
+    background: var(--primary-gradient);
+    border-radius: 24px;
+    padding: 40px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--card-shadow-premium);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.premium-balance-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    z-index: 1;
+}
+
+.premium-balance-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    right: -5%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    z-index: 1;
+}
+
+.balance-content {
+    position: relative;
+    z-index: 2;
+}
+
+.balance-content .label {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 12px;
+    display: block;
+}
+
+.balance-content h2 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0;
+    color: white;
+}
+
+.balance-content .worth {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #4ade80; /* Brighter green for contrast on blue */
+}
+
+.balance-actions-premium {
+    position: relative;
+    z-index: 2;
+}
+
+.convert-btn-premium {
+    background: white;
+    color: var(--primary-blue);
+    border: none;
+    padding: 16px 32px;
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.convert-btn-premium:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    background: #f8fafc;
+}
+
+/* History Styles */
+.history-section-premium {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+}
+
+.history-header-premium {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.transaction-list-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.premium-transaction-item {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.premium-transaction-item:hover {
+    background: white;
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.tx-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.tx-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tx-details h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.tx-details p {
+    margin: 2px 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.tx-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.tx-amount.positive { color: #16a34a; }
+.tx-amount.negative { color: #dc2626; }
+
+/* Status Badges */
+.premium-tag {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.earned-premium { background: #dcfce7; color: #166534; }
+.redeemed-premium { background: #fee2e2; color: #991b1b; }

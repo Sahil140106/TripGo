@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripGo | Premium Checkout</title>
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="browsecar.css">
+    <link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+
+    <nav class="navbar" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0;">
+        <a href="index.html" class="logo">
+            <img src="logo-removebg-preview.png" alt="TripGo Logo" class="nav-logo-img">
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="browsecar.html">Browse Cars</a>
+        </div>
+    </nav>
+
+    <div class="checkout-wrapper">
+        <div class="checkout-header">
+            <div class="step-indicator">
+                <span class="step done"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Selection</span>
+                <div class="divider"></div>
+                <span class="step active">Booking Details</span>
+                <div class="divider"></div>
+                <span class="step">Confirmation</span>
+            </div>
+            <h1>Secure Checkout</h1>
+            <p>Finalize your trip details and hit the road.</p>
+        </div>
+
+        <div class="grid-layout">
+            <!-- Left Side: Form -->
+            <div class="glass-card">
+                <h2 class="section-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Trip Information
+                </h2>
+                
+                <form id="bookingForm" class="form-grid">
+                    <div class="input-wrapper full">
+                        <label>Pickup Point</label>
+                        <input type="text" id="origin" placeholder="e.g., Delhi International Airport T3" required>
+                    </div>
+                    
+                    <div class="input-wrapper full">
+                        <label>Drop-off Destination</label>
+                        <input type="text" id="destination" placeholder="e.g., Jaipur City Center" required>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label>Pickup Date</label>
+                        <input type="date" id="pickupDate" required>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label>Return Date</label>
+                        <input type="date" id="returnDate" required>
+                    </div>
+                    
+                    <div class="input-wrapper" style="display: none;">
+                        <input type="number" id="days" value="1">
+                    </div>
+
+                    <div class="input-wrapper full">
+                        <label style="margin-top: 10px;">Driving License Number</label>
+                        <input type="text" id="license" placeholder="e.g., RJ14-202300..." required>
+                    </div>
+
+                    <div class="input-wrapper full" style="margin-top: 10px;">
+                        <h2 class="section-title" style="margin-bottom: 15px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            Payment Mode
+                        </h2>
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.9rem; color: #475569;">
+                            <span id="paymentStatusMsg">Our payment system is currently prioritizing <b>Secure UP/Card</b> transations for your safety.</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Side: Car Summary -->
+            <div class="glass-card car-summary-card">
+                <img id="carImg" src="" alt="Car Image" class="car-hero-img">
+                
+                <div class="car-badges">
+                    <span class="car-badge" id="carType">Luxury</span>
+                    <span class="car-badge" style="background: #ecfdf5; color: #10b981;">Assured</span>
+                </div>
+                
+                <h3 class="car-name-large" id="carName">Loading...</h3>
+                
+                <div class="price-details">
+                    <div class="detail-item">
+                        <span>Daily Rate</span>
+                        <span id="pricePerDay">₹0</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Booking Fee</span>
+                        <span style="color: #10b981;">FREE</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Duration</span>
+                        <span id="durationDisplay">1 day</span>
+                    </div>
+                    
+                    <div class="detail-item" id="dateRangeDisplay" style="font-size: 0.85rem; margin-top: -8px; margin-bottom: 8px;">
+                        <span>-</span>
+                        <span>-</span>
+                    </div>
+                    
+                    <div class="detail-item total">
+                        <span>Estimated Total</span>
+                        <span id="totalAmount">₹0</span>
+                    </div>
+                </div>
+
+                <button type="submit" form="bookingForm" class="btn-premium btn-pay" id="payBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    Proceed to Pay
+                </button>
+                
+                <p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin-top: 15px;">
+                    Secure 256-bit SSL Encrypted Payment
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="profile.js"></script>
+    <script src="checkout.js"></script>
+</body>>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripGo - Peer-to-Peer Car Sharing</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script src="profile.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+       <a href="index.html" class="logo">
+    <img src="logo-removebg-preview.png" alt="TripGo Logo" class="nav-logo-img">
+</a>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="#">How It Works</a>
+            <a href="javascript:void(0)" onclick="requireAuth('browsecar.html')">Browse Cars</a>
+            <a href="#">About</a>
+        </div>
+
+        <div class="nav-auth" id="nav-auth-section">
+            <a href="login.html" class="btn-outline">Login</a>
+            <a href="signup.html">
+                <button class="SignUp-btn">SignUp</button>
+            </a>
+        </div>
+
+        <button id="menu-btn" class="mobile-toggle">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </button>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-overlay">
+            <img src="hero.png"Car Fleet class="hero-img">
+            <div class="hero-gradient"></div>
+        </div>
+
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Find Your Perfect Ride <br>
+                <span class="highlight">with TripGo</span>
+            </h1>
+            <p class="hero-subtitle">
+                Experience the ultimate freedom of self-drive. Rent premium cars from local owners.
+            </p>
+            
+            <div class="hero-actions">
+                <button class="btn-primary" onclick="requireAuth('browsecar.html')">Start Renting</button>
+                <button class="btn-secondary" onclick="requireAuth('listing.html')">List Your Car</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="payment-navbar">
+        <div class="payment-container">
+            <span class="payment-text">Secure Payments with:</span>
+            <div class="payment-icons">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/Apple_Pay_logo.svg" alt="Apple Pay">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo.svg" alt="Google Pay">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo.png" alt="UPI">
+            </div>
+        </div>
+    </section>
+
+    <section class="cars-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Featured Cars</h2>
+                <select id="type-filter" class="filter-dropdown">
+                    <option value="All">All Categories</option>
+                    <option value="Luxury">Luxury</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="SUV">SUV</option>
+                </select>
+            </div>
+
+            <div id="car-container" class="car-grid">
+                </div>
+        </div>
+    </section>
+    <section class="how-it-works">
+    <div class="section-container">
+        <div class="how-header">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Rent a car in 4 simple steps</p>
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="icon-wrapper">
+                    <div class="main-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                    <span class="step-number">1</span>
+                </div>
+                <h3 class="step-title">Search & Browse</h3>
+                <p class="step-text">Find the perfect car for your trip using our smart filters and location search.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="icon-wrapper">
+                    <div class="main-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </div>
+                    <span class="step-number">2</span>
+                </div>
+                <h3 class="step-title">Book Instantly</h3>
+                <p class="step-text">Select your dates, complete the booking, and make secure payment through our platform.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="icon-wrapper">
+                    <div class="main-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="13" width="22" height="8" rx="2"></rect><path d="M7 13V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg>
+                    </div>
+                    <span class="step-number">3</span>
+                </div>
+                <h3 class="step-title">Pick Up & Drive</h3>
+                <p class="step-text">Meet the owner, complete verification, and enjoy your ride with full insurance coverage.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="icon-wrapper">
+                    <div class="main-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </div>
+                    <span class="step-number">4</span>
+                </div>
+                <h3 class="step-title">Return & Review</h3>
+                <p class="step-text">Return the car, leave a review, and help build our trusted community.</p>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="testimonials">
+    <div class="container">
+        <h2 class="title">What Our Community Says</h2>
+        <p class="subtitle">Join thousands of satisfied users who trust TripGo for their car sharing needs</p>
+        
+        <div class="testimonial-grid" id="testimonial-container">
+            </div>
+    </div>
+</section>
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-card">
+            <div class="stat-item">
+                <h2 class="stat-value" id="count-reviews">10,000+</h2>
+                <p class="stat-label">Happy Users</p>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <h2 class="stat-value" id="count-cars">5,000+</h2>
+                <p class="stat-label">Cars Listed</p>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <h2 class="stat-value" id="avg-rating">4.8</h2>
+                <p class="stat-label">Average Rating</p>
+            </div>
+        </div>
+    </div>
+</section>
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-about">
+                <h2 class="footer-logo" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H6.5C5.84 5 5.29 5.42 5.08 6.01L3 12V20C3 20.55 3.45 21 4 21H5C5.55 21 6 20.55 6 20V19H18V20C18 20.55 18.45 21 19 21H20C20.55 21 21 20.55 21 20V12L18.92 6.01ZM6.5 7H17.5L18.5 10H5.5L6.5 7ZM19 17H5V12H19V17Z"/>
+                    </svg>
+                    TripGo
+                </h2>
+                <p>India's most trusted peer-to-peer car rental platform. Connecting car owners with renters for a seamless sharing experience.</p>
+                <div class="social-icons">
+                    <a href="#" class="s-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path></svg>
+                    </a>
+                    <a href="#" class="s-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                    </a>
+                    <a href="#" class="s-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </a>
+                    <a href="#" class="s-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-nav">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="browsecar.html">Browse Cars</a></li>
+                    <li><a href="#">How It Works</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-nav">
+                <h4>For Users</h4>
+                <ul>
+                    <li><a href="#">Sign Up</a></li>
+                    <li><a href="#">Login</a></li>
+                    <li><a href="listing.html">List Your Car</a></li>
+                    <li><a href="profile.html">Dashboard</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contact">
+                <h4>Contact Info</h4>
+                <p>
+                    <svg class="contact-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"></path></svg>
+                    +91 98765 43210
+                </p>
+                <p>
+                    <svg class="contact-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    support@tripgo.com
+                </p>
+                <p>
+                    <svg class="contact-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    Sector 18, Gurgaon, Haryana
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2026 TripGo. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="script.js"></script>
+    <script src="profile.js"></script>
+    
+    <!-- Centralized Floating Notification Bell -->
+    <div class="icon-btn floating-bell" id="notificationBtn" title="Notifications">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <span class="notification-badge" id="notifBadge">0</span>
+        
+        <!-- Upward Opening Floating Dropdown -->
+        <div class="profile-dropdown floating-dropdown" id="notificationDropdown">
+            <div class="dropdown-header">
+                <span>Notifications</span>
+                <span id="markAllRead" style="font-size: 11px; color: #2563eb; cursor: pointer; font-weight: 600;">Mark all read</span>
+            </div>
+            <div id="notificationList" style="max-height: 350px; overflow-y: auto;">
+                <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 13px;">No new notifications</div>
+            </div>
+            <div style="border-top: 1px solid #f1f5f9; padding: 12px; text-align: center; background: #fff;">
+                <a href="profile.html?view=messages" style="color: #2563eb; font-size: 13px; font-weight: 700; text-decoration: none; display: block; padding: 5px;">View All Dashboard Messages</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

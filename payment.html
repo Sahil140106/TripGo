@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripGo | Secure Checkout</title>
+    <link rel="stylesheet" href="payment.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="config.js"></script>
+    <!-- Google Fonts for premium feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="index.html" class="logo">
+            <img src="logo-removebg-preview.png" alt="TripGo">
+            <!-- <span style="font-weight: 800; font-size: 24px; color: #3563e9;">TripGo</span> -->
+        </a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="browsecar.html">Browse</a>
+            <a href="#">Help Center</a>
+        </nav>
+        <div class="nav-auth" id="nav-auth-section">
+            <button class="login-btn" onclick="window.location.href='login.html'">Sign In</button>
+        </div>
+    </header>
+
+    <main class="desktop-wrapper">
+        <div class="checkout-header">
+            <h1>Secure Checkout</h1>
+            <p>Please review your booking details before proceeding to payment.</p>
+        </div>
+
+        <div class="booking-container">
+            
+            <section class="car-section">
+                <!-- Trip Summary Card -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <span id="carName">TOYOTA INNOVA CRYSTA</span>
+                        <div class="info-top-row">
+                            <span class="badge" id="carTypeBadge">MUV</span>
+                            <button class="btn-outline" id="changeCarBtn">Change Car</button>
+                        </div>
+                    </div>
+                    
+                    <div class="car-main-flex">
+                        <div class="car-image-container">
+                            <img id="carImage" src="https://stimg.cardekho.com/images/carexteriorimages/930x620/Toyota/Innova-Crysta/10706/1701931885565/front-left-side-47.jpg" alt="Car Image">
+                        </div>
+                        <div class="car-info-container">
+                            <div class="booking-period-box">
+                                <div class="timeline-flex" style="margin-bottom: 25px;">
+                                    <div class="calendar-input-node">
+                                        <label>Pickup From</label>
+                                        <div class="date-picker-input" style="background: #ffffff; color: var(--text-main); display: flex; align-items: center; gap: 8px; border: 1px solid #e2e8f0;">
+                                            <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i>
+                                            <span id="tripLocation">Mumbai</span>
+                                        </div>
+                                    </div>
+                                    <div class="arrow-icon" style="margin-bottom: 0; align-self: center; margin-top: 20px;"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                    <div class="calendar-input-node">
+                                        <label>Trip Destination</label>
+                                        <input type="text" id="tripDestinationSelect" class="date-picker-input" placeholder="Enter destination...">
+                                    </div>
+                                </div>
+                                <div class="timeline-flex">
+                                    <div class="calendar-input-node">
+                                        <label>Trip Start</label>
+                                        <input type="date" id="pickupDateInput" class="date-picker-input">
+                                        <span style="font-size: 11px; color: #90a3bf; margin-top: 4px; font-weight: 600;">09:30 AM</span>
+                                    </div>
+                                    <div class="arrow-icon" style="margin-bottom: 0; align-self: center; margin-top: 20px;"><i class="fa-solid fa-arrow-right-long"></i></div>
+                                    <div class="calendar-input-node">
+                                        <label>Trip End</label>
+                                        <input type="date" id="returnDateInput" class="date-picker-input">
+                                        <span style="font-size: 11px; color: #90a3bf; margin-top: 4px; font-weight: 600;">09:30 AM</span>
+                                    </div>
+                                </div>
+                                <p class="duration-tag" id="duration">Duration: 15 Days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Car Details Card -->
+                <div class="content-card">
+                    <div class="card-header">Car Specifications</div>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <i class="fa-solid fa-gears"></i>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #90a3bf;">Transmission</label>
+                                <span id="transmissionType">Manual</span>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fa-solid fa-gas-pump"></i>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #90a3bf;">Fuel Type</label>
+                                <span id="fuelType">Diesel</span>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fa-solid fa-users"></i>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #90a3bf;">Capacity</label>
+                                <span id="seatingCapacity">7</span> Seater
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fa-solid fa-suitcase"></i>
+                            <div>
+                                <label style="display: block; font-size: 11px; color: #90a3bf;">Luggage</label>
+                                <span id="luggageCapacity">2 Large Bags</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="inclusions-panel">
+
+                        <div class="inclusion-row" id="fuel-status-row">
+                            <span>Fuel Charges</span>
+                            <span class="status-tag success" id="fuel-status-tag">Not Included</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Handover Special Card -->
+                <div class="content-card handover-box" id="handoverBenefitCard">
+                    <div class="card-header">
+                        Exclusive Benefit
+                        <i class="fa-solid fa-star" style="color: #f59e0b;"></i>
+                    </div>
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <div style="font-size: 32px; color: #22c55e;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                        <div>
+                            <p style="font-weight: 700; font-size: 15px; color: #166534;">Handover is available</p>
+                            <p id="handoverStatusText" style="font-size: 13px; color: #15803d; margin-top: 2px;">
+                                This car supports our community return program. List your return journey and earn up to 40% back.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="summary-section">
+                <!-- Location & Options Card -->
+                <div class="content-card" id="pickupDetailsCard">
+                    <div class="card-header">Pickup Details</div>
+                    <div class="form-group">
+                        <div class="input-node">
+                            <label>Pickup Location</label>
+                            <select id="pickupLocationSelect">
+                                <option value="hub">Company Hub - Mumbai Airport (Free)</option>
+                                <option value="home">Home Delivery (₹500)</option>
+                            </select>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Price Summary Card -->
+                <div class="content-card summary-box" style="border: 2px solid var(--primary);">
+                    <div class="card-header">Fare Summary</div>
+                    <div class="price-breakdown">
+                        <div class="p-row">
+                            <span>Price per Day</span>
+                            <span id="dailyPriceValue">₹ 0</span>
+                        </div>
+                        <div class="p-row">
+                            <span>Rental Duration</span>
+                            <span id="durationValue">0 Days</span>
+                        </div>
+                        <div class="p-row" style="border-bottom: 1px dashed #e2e8f0; padding-bottom: 15px; margin-bottom: 15px;">
+                            <span style="color: var(--text-main); font-weight: 700;">Subtotal Rental</span>
+                            <span id="rentalCharges" style="color: var(--primary) !important;">₹ 0</span>
+                        </div>
+                        <div class="p-row" id="deliveryRow" style="display: none;">
+                            <span>Home Delivery Charges</span>
+                            <span id="deliveryCharges">₹ 0</span>
+                        </div>
+                        <div class="p-row" id="handoverDiscountRow" style="display: none; color: #16a34a; font-weight: 700;">
+                            <span>Handover Discount (25% Off)</span>
+                            <span id="handoverDiscountValue">- ₹ 0</span>
+                        </div>
+                        <div class="p-row" id="tripPointsDiscountRow" style="display: none; color: #4f46e5; font-weight: 700;">
+                            <span>Trip Points Applied</span>
+                            <span id="tripPointsDiscountValue">- ₹ 0</span>
+                        </div>
+                        <div class="p-row">
+                            <span>Refundable Security Deposit <i class="fa-solid fa-circle-info"></i></span>
+                            <span id="refundableDepositValue">₹ 3,000</span>
+                        </div>
+                        <hr>
+                        
+                        <!-- Trip Points usage removed as requested -->
+
+                        <!-- Promo Code Section -->
+                        <div class="promo-code-box" style="margin: 15px 0; border-top: 1px dashed #e2e8f0; padding-top: 15px;">
+                            <label style="display: block; font-size: 11px; color: #90a3bf; margin-bottom: 8px; font-weight: 700; text-transform: uppercase;">Have a Promo Code?</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="promoCodeInput" placeholder="Enter code" style="flex: 1; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px;">
+                                <button id="applyPromoBtn" style="padding: 0 15px; background: #1e293b; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">Apply</button>
+                            </div>
+                            <p id="promoMessage" style="margin-top: 5px; font-size: 11px; display: none;"></p>
+                        </div>
+
+                        <!-- Discount Rows -->
+                        <div class="p-row" id="tripPointsDiscountRow" style="display: none; color: #4f46e5; font-weight: 700;">
+                            <span>Trip Points Applied</span>
+                            <span id="tripPointsDiscountValue">- ₹ 0</span>
+                        </div>
+                        <div class="p-row" id="promoDiscountRow" style="display: none; color: #059669; font-weight: 700;">
+                            <span>Coupon Discount</span>
+                            <span id="promoDiscountValue">- ₹ 0</span>
+                        </div>
+                        <div class="final-total">
+                            <div class="total-label">
+                                <span>Total Payable</span>
+                                <small>Inclusive of all taxes</small>
+                            </div>
+                            <span class="total-price" id="totalAmount">₹ 0</span>
+                        </div>
+                    </div>
+                    
+                    <button class="pay-btn" id="payBtn">
+                        <i class="fa-solid fa-lock"></i>
+                        Confirm & Pay
+                    </button>
+
+                    <div class="trust-badges">
+                        <div class="badge-item">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>Secure</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Refundable</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="fa-solid fa-headset"></i>
+                            <span>24/7 Help</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="profile.js"></script>
+    <script src="payment.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const authSection = document.getElementById('nav-auth-section');
+            
+            if (user) {
+                authSection.innerHTML = `
+                    <div class="user-profile-container">
+                        <div class="icon-btn floating-bell" title="Notifications">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            <span class="notification-badge"></span>
+                        </div>
+                        <div class="icon-btn profile-trigger" id="profile-trigger">
+                        </div>
+                        <div class="profile-dropdown" id="profile-dropdown">
+                            <div class="dropdown-header">
+                                <span></span>
+                                <small></small>
+                            </div>
+                            <a href="${user.role === 'ADMIN' ? 'admin.html' : 'profile.html'}" class="dropdown-item">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                My Profile
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" onclick="logout()" class="dropdown-item logout">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                if (typeof updateAllProfileIcons === 'function') updateAllProfileIcons();
+                if (typeof initNotifications === 'function') initNotifications();
+                
+                const trigger = document.getElementById('profile-trigger');
+                const dropdown = document.getElementById('profile-dropdown');
+
+                if (trigger && dropdown) {
+                    trigger.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('active');
+                    });
+                    document.addEventListener('click', () => dropdown.classList.remove('active'));
+                }
+            }
+        });
+    </script>
+</body>
+</html>

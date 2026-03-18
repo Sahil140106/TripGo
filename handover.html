@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initiate Trip Handover - TripGo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <link rel="stylesheet" href="profile.css">
+    <style>
+        .handover-form-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-header h1 {
+            font-size: 2.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: var(--text-sub);
+            font-size: 1.1rem;
+        }
+
+        .car-summary-card {
+            display: flex;
+            gap: 20px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+        }
+
+        .car-summary-img {
+            width: 120px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .car-summary-info h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1e293b;
+        }
+
+        .car-summary-info p {
+            margin: 5px 0 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .form-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .form-section h2 {
+            font-size: 1.2rem;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .cost-sharing-box {
+            background: #eff6ff;
+            padding: 25px;
+            border-radius: 16px;
+            border: 2px solid #bfdbfe;
+            margin-top: 10px;
+        }
+
+        .cost-slider-container {
+            margin-top: 20px;
+        }
+
+        .cost-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .submit-container {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .btn-submit {
+            padding: 16px 48px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 16px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #2563eb;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .handover-form-container {
+                padding: 20px;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container" style="max-width: 1200px;">
+        <a href="profile.html" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Dashboard
+        </a>
+
+        <div class="handover-form-container">
+            <div class="form-header">
+                <h1>Initiate Handover</h1>
+                <p>Allow another user to complete your trip and earn back money.</p>
+            </div>
+
+            <div class="car-summary-card">
+                <img id="display-car-img" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80" alt="Car" class="car-summary-img">
+                <div class="car-summary-info">
+                    <h3 id="display-car-name">Loading Car...</h3>
+                    <p id="display-booking-id">Booking ID: #-------</p>
+                    <p id="display-owner-info">Owner: Loading...</p>
+                </div>
+            </div>
+
+            <form id="handoverForm">
+                <input type="hidden" id="formCarId">
+                <input type="hidden" id="formBookingId">
+                <input type="hidden" id="formCarImage">
+                <input type="hidden" id="formPricePerDay">
+                
+                <div class="form-grid">
+                    <div class="form-section">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            Journey Details
+                        </h2>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Current Pickup Hub (Where you'll leave the car)</label>
+                        <select id="pickupHub" required>
+                            <option value="" disabled selected>Select a hub...</option>
+                            <option value="IGI Airport T3, Delhi">Indira Gandhi International Airport (T3)</option>
+                            <option value="New Delhi Railway Station">New Delhi Railway Station</option>
+                            <option value="Rajiv Chowk Metro Station">Rajiv Chowk Metro Station</option>
+                            <option value="Noida City Centre">Noida City Centre</option>
+                            <option value="Cyber Hub, Gurgaon">Cyber Hub, Gurgaon</option>
+                            <option value="Pune Airport">Pune Airport</option>
+                            <option value="Mumbai Central">Mumbai Central</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Final Destination Hub (Where the car belongs)</label>
+                        <select id="destinationHub" required>
+                            <option value="" disabled selected>Select a hub...</option>
+                            <option value="IGI Airport T3, Delhi">Indira Gandhi International Airport (T3)</option>
+                            <option value="New Delhi Railway Station">New Delhi Railway Station</option>
+                            <option value="Rajiv Chowk Metro Station">Rajiv Chowk Metro Station</option>
+                            <option value="Noida City Centre">Noida City Centre</option>
+                            <option value="Cyber Hub, Gurgaon">Cyber Hub, Gurgaon</option>
+                            <option value="Pune Airport">Pune Airport</option>
+                            <option value="Mumbai Central">Mumbai Central</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Handover Date</label>
+                        <input type="date" id="handoverDate" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Return By Date (Trip End)</label>
+                        <input type="date" id="returnDate" required>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            Cost Sharing
+                        </h2>
+                        <p style="color: var(--text-sub); font-size: 0.9rem; margin-top: -10px; margin-bottom: 15px;">Setting a fair price increases your chances of a quick handover.</p>
+                        
+                        <div class="cost-sharing-box">
+                            <label>Daily Cost Sharing (What the next renter pays)</label>
+                            <div class="cost-slider-container">
+                                <input type="range" id="costSlider" min="500" max="10000" step="100" style="width: 100%;">
+                                <div class="cost-display">
+                                    <span>₹<span id="costValueDisplay">2500</span> / Day</span>
+                                    <span style="color: #059669; font-size: 0.9rem;">~75% of original rate</span>
+                                </div>
+                            </div>
+                            <input type="hidden" id="finalCost" name="costSharing">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="input-group">
+                            <label>Additional Notes (Optional)</label>
+                            <textarea id="notes" rows="3" placeholder="Any specific instructions for the next user..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-container">
+                    <button type="submit" class="btn-submit">
+                        List for Handover Now
+                    </button>
+                    <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 15px;">By listing, you agree to transfer liability during the handover period.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="handover.js"></script>
+</body>
+</html>
