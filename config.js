@@ -14,4 +14,8 @@ const OTP_API_URL = (window.location.hostname === 'localhost' || window.location
     ? 'http://localhost:4000/api/otp'
     : 'https://tripgo-otp.onrender.com/api/otp'; 
 
+const NOTIFY_API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:4000/api/notify'
+    : 'https://tripgo-otp.onrender.com/api/notify';
+
 console.log("TripGo Config Loaded. Base URL:", API_BASE_URL);

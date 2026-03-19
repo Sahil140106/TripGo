@@ -138,7 +138,25 @@ function showWowNotification(m) {
     }, 6000);
 }
 
-// Notification System Logic (Refactored to use Backend Messages)
+// Helper to send emails via notification service
+async function sendEmail(email, subject, message) {
+    if (typeof NOTIFY_API_URL === 'undefined') {
+        console.warn("NOTIFY_API_URL is not defined in config.js");
+        return;
+    }
+    try {
+        await fetch(`${NOTIFY_API_URL}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, subject, message })
+        });
+        console.log("✅ Email notification sent to:", email);
+    } catch (err) {
+        console.warn("❌ Failed to send email notification:", err);
+    }
+}
+
+// Notification Toast System
 function initNotificationBell() {
     const notifBtn = document.getElementById('notificationBtn');
     const notifDropdown = document.getElementById('notificationDropdown');
@@ -751,6 +769,16 @@ async function cancelBooking() {
                 });
             } catch (err) { console.error("Notify renter error:", err); }
 
+            // C. Send actual Email via Brevo
+            const cancelSubject = `TripGo: Booking Cancelled - #${currentActiveBooking.id}`;
+            const cancelMessage = `Hello ${user.fullName},\n\n` +
+                                 `Your booking for ${carName} (#${currentActiveBooking.id}) has been successfully cancelled.\n` +
+                                 `Refund (if applicable) will be processed as per our policy.\n\n` +
+                                 `Dates: ${currentActiveBooking.startDate} to ${currentActiveBooking.endDate}\n\n` +
+                                 `Thank you for using TripGo.`;
+            
+            await sendEmail(user.email, cancelSubject, cancelMessage);
+
             alert("Booking cancelled successfully!");
             closeBookingModal();
             fetchDashboardStats(); // Refresh the list
@@ -1208,6 +1236,26 @@ async function acceptHandover(id) {
                         type: 'HANDOVER_ACCEPTED'
                     })
                 });
+
+                // 4. Send actual Emails
+                // To the Taker (User who accepted)
+                const takerSubject = `TripGo: Handover Trip Accepted! - ${h.carModel}`;
+                const takerMsg = `Hi ${user.fullName},\n\n` +
+                                 `You have successfully accepted a handover trip for ${h.carModel}.\n` +
+                                 `Pickup: ${h.pickupLocation} (${h.pickupDate})\n` +
+                                 `Destination: ${h.destination} (${h.returnDate})\n\n` +
+                                 `Please coordinate with the original renter (${h.renterName} at ${h.renterEmail}) for the handover.\n\n` +
+                                 `Happy Driving!`;
+                await sendEmail(user.email, takerSubject, takerMsg);
+
+                // To the Initiator (Original Renter)
+                const initiatorSubject = `TripGo: Your Handover Listing has been Accepted!`;
+                const initiatorMsg = `Hi ${h.renterName},\n\n` +
+                                     `Great news! ${user.fullName} has accepted your handover listing for ${h.carModel}.\n\n` +
+                                     `Accepted By: ${user.fullName} (${user.email})\n` +
+                                     `Trip: ${h.pickupLocation} to ${h.destination}\n\n` +
+                                     `Please get in touch to coordinate the hand-off.`;
+                await sendEmail(h.renterEmail, initiatorSubject, initiatorMsg);
             }
         }
         
@@ -1746,6 +1794,15 @@ function initProfilePage() {
                             type: 'HANDOVER'
                         })
                     });
+
+                    // Send Confirmation Email to Renter
+                    const hSubject = `TripGo: Car Listed for Handover - ${hData.carModel}`;
+                    const hMsg = `Hi ${user.fullName},\n\n` +
+                                 `You have successfully listed ${hData.carModel} for Trip Handover.\n` +
+                                 `Journey: ${hData.pickupLocation} to ${hData.destination}\n` +
+                                 `Reward Point Sharing: ₹${hData.costSharing}\n\n` +
+                                 `You will be notified once someone accepts your listing.`;
+                    await sendEmail(user.email, hSubject, hMsg);
 
                     alert('Car listed for Handover!');
                     document.getElementById('initiateHandoverModal').classList.remove('active');

@@ -326,6 +326,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial calculation
     recalculateSummary();
 
+    // Helper to send emails via notification service
+    async function sendEmail(email, subject, message) {
+        try {
+            await fetch(`${NOTIFY_API_URL}/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, subject, message })
+            });
+            console.log("✅ Email notification sent to:", email);
+        } catch (err) {
+            console.warn("❌ Failed to send email notification:", err);
+        }
+    }
+
     // Pay Button Click
     document.getElementById('payBtn').addEventListener('click', async function() {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -339,15 +353,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const start = pickupInput.value;
         const end = returnInput.value;
 
-        const baseUrl = API_BASE_URL;
-
         payBtn.disabled = true;
-        payBtn.innerText = "Processing...";
+        payBtn.innerHTML = '<i class="fa-solid fa-spinner fa-rotate"></i> Processing...';
 
         try {
             console.log("PAYMENT DEBUG: Starting booking for User ID:", user.id, "Car ID:", carId);
             
-            // 1. Create Booking
+            // 1. Create Booking (Mandatory First Step)
             const finalDest = destinationInput ? destinationInput.value : dest;
             const displayDest = booking.isHandoverBooking ? `[HANDOVER] ${finalDest}` : finalDest;
 
@@ -362,7 +374,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 destination: displayDest,
                 isHandoverBooking: booking.isHandoverBooking || false
             };
-            console.log("PAYMENT DEBUG: Final Booking Payload to be sent:", JSON.stringify(bookingPayload, null, 2));
 
             const bookingResponse = await fetch(`${BOOKING_API_URL}/store`, {
                 method: 'POST',
@@ -371,15 +382,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (!bookingResponse.ok) {
-                const errText = await bookingResponse.text();
-                console.error("PAYMENT DEBUG: Booking Failed:", bookingResponse.status, errText);
                 throw new Error("Failed to create booking");
             }
             const savedBooking = await bookingResponse.json();
-            console.log("PAYMENT DEBUG: Booking Created Successfully:", savedBooking);
+            console.log("PAYMENT DEBUG: Booking Created Successfully:", savedBooking.id);
 
-            // 2. Create Payment Record
-            const paymentResponse = await fetch(`${API_BASE_URL}/payments/store`, {
+            // 2. Parallel Processing (Faster!)
+            const parallelTasks = [];
+
+            // A. Create Payment Record
+            parallelTasks.push(fetch(`${API_BASE_URL}/payments/store`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -388,54 +400,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     amount: parseFloat(currentTotal),
                     status: 'SUCCESS'
                 })
-            });
+            }));
 
-            if (!paymentResponse.ok) throw new Error("Failed to create payment record");
-            console.log("PAYMENT DEBUG: Payment record created successfully.");
-
-            // 2b. Deduct Trip Points Logic removed
-
-            // 3. Update Car Status to BOOKED
-            console.log("PAYMENT DEBUG: Updating Car Status to BOOKED for Car ID:", carId);
-            const statusResponse = await fetch(`${CAR_API_URL}/${carId}/status?status=BOOKED`, {
+            // B. Update Car Status
+            parallelTasks.push(fetch(`${CAR_API_URL}/${carId}/status?status=BOOKED`, {
                 method: 'PATCH'
-            });
+            }));
 
-            if (!statusResponse.ok) {
-                console.warn("PAYMENT DEBUG: Car status update failed, but booking was successful.");
-            } else {
-                console.log("PAYMENT DEBUG: Car status updated to BOOKED successfully.");
-            }
-
-            // 3b. Mark Promo Code as Used
+            // C. Promo Code Cleanup
             if (activePromoCode) {
-                console.log("PAYMENT DEBUG: Using Promo Code:", activePromoCode);
-                await fetch(`${baseUrl}/auth/vouchers/use?code=${activePromoCode}`, {
+                parallelTasks.push(fetch(`${API_BASE_URL}/auth/vouchers/use?code=${activePromoCode}`, {
                     method: 'POST'
-                });
+                }));
             }
 
-            // 4. Notifications are now managed by the Backend (BookingController.storeBooking)
-            console.log("PAYMENT DEBUG: Notifications handled by Backend.");
+            // D. System Notification / Notification Service Email
+            const emailSubject = `TripGo: Booking Confirmed! - #${savedBooking.id}`;
+            const emailMessage = `Congratulations! Your booking for ${carName} is confirmed.\n\n` +
+                                `Booking ID: TG-${savedBooking.id}\n` +
+                                `Dates: ${start} to ${end}\n` +
+                                `Total Amount: ₹${currentTotal}\n\n` +
+                                `Pickup: ${origin}\n` +
+                                `Destination: ${finalDest}\n\n` +
+                                `Thank you for choosing TripGo!\n` +
+                                `Note: Please keep your ID proof ready at the time of pickup.`;
 
-            if (handover) {
-                alert(`Booking Successful! Since this car supports Trip Handover, you can list your return journey to earn back.`);
-                
-                const handoverUrl = `browsecar.html?mode=handover&car=${encodeURIComponent(carName)}&prefill=true&origin=${encodeURIComponent(origin)}&dest=${encodeURIComponent(dest)}&carImage=${encodeURIComponent(carImg)}&startDate=${start}&endDate=${end}`;
-                
-                // Add to local notifications if available
-                if (typeof addNotification === 'function') {
-                    addNotification(
-                        `Trip Confirmed: ${carName}. <a href="${handoverUrl}" style="color: #2563eb; font-weight: 700; text-decoration: underline;">List for Reverse Renting</a>`, 
-                        'booking', 
-                        'profile.html'
-                    );
-                }
-            } else {
-                alert('Booking Successful!');
-                // Send HANDOVER_PROMPT message if owner disabled it
-                console.log("PAYMENT DEBUG: Sending Handover Prompt to Renter...");
-                await fetch(`${baseUrl}/messages/sendDirect`, {
+            parallelTasks.push(sendEmail(user.email, emailSubject, emailMessage));
+
+            // E. Logic for Handover Messaging
+            if (!handover) {
+                parallelTasks.push(fetch(`${API_BASE_URL}/messages/sendDirect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -445,46 +439,46 @@ document.addEventListener('DOMContentLoaded', function() {
                         senderEmail: "support@tripgo.com",
                         carName: carName,
                         origin: origin,
-                        destination: destinationInput ? destinationInput.value : dest,
+                        destination: finalDest,
                         startDate: start,
                         endDate: end,
                         type: 'HANDOVER_PROMPT',
                         bookingId: savedBooking.id
                     })
-                });
-
-                if (typeof addNotification === 'function') {
-                    addNotification(
-                        `Trip Confirmed: ${carName}. Your booking is successful.`, 
-                        'booking', 
-                        'profile.html'
-                    );
-                }
+                }));
             }
 
-            // 5. Finalize Handover if applicable
+            // F. Finalize Handover if applicable
             const handoverId = urlParams.get('handoverId') || booking.handoverId;
             if (handoverId) {
-                console.log("PAYMENT DEBUG: Finalizing Handover for ID:", handoverId);
-                let notes = {};
-                try {
-                    // Fetch existing handover to get notes if possible, but for simplicity we update
-                    notes = { status: 'APPROVED', acceptedByName: user.fullName };
-                } catch(e) {}
-
-                await fetch(`${baseUrl}/handovers/${handoverId}`, {
+                const notes = JSON.stringify({ status: 'APPROVED', acceptedByName: user.fullName });
+                parallelTasks.push(fetch(`${API_BASE_URL}/handovers/${handoverId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        notes: JSON.stringify(notes),
+                        notes: notes,
                         takerId: user.id,
                         takerName: user.fullName,
                         takerEmail: user.email
                     })
-                });
-                console.log("PAYMENT DEBUG: Handover finalized.");
+                }));
             }
-            
+
+            // Wait for all non-critical updates to finish in parallel
+            await Promise.allSettled(parallelTasks);
+            console.log("PAYMENT DEBUG: All parallel tasks finished.");
+
+            // 3. Local UI update (optional)
+            if (typeof addNotification === 'function') {
+                const handoverUrl = `browsecar.html?mode=handover&car=${encodeURIComponent(carName)}&prefill=true&origin=${encodeURIComponent(origin)}&dest=${encodeURIComponent(finalDest)}&carImage=${encodeURIComponent(carImg)}&startDate=${start}&endDate=${end}`;
+                const toastMsg = handover 
+                    ? `Trip Confirmed: ${carName}. <a href="${handoverUrl}" style="color: #2563eb; font-weight: 700; text-decoration: underline;">List for Reverse Renting</a>`
+                    : `Trip Confirmed: ${carName}. Your booking is successful.`;
+                
+                addNotification(toastMsg, 'booking', 'profile.html');
+            }
+
+            alert('Booking Successful! A confirmation email has been sent to ' + user.email);
             window.location.href = 'profile.html';
 
         } catch (err) {
