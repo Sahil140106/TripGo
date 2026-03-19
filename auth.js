@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sendResetOtpBtn.innerText = "Sending...";
 
             try {
-                const response = await fetch(`http://${apiHost}:4000/api/otp/send`, {
+                const response = await fetch(`${OTP_API_URL}/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // 1. Verify OTP
-                const vResponse = await fetch(`http://${apiHost}:4000/api/otp/verify`, {
+                const vResponse = await fetch(`${OTP_API_URL}/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, otp })
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // 2. Update Password
-                const rResponse = await fetch(`http://${apiHost}:8080/api/auth/reset-password`, {
+                const rResponse = await fetch(`${AUTH_API_URL}/reset-password`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, role, newPassword })
