@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Button Animation (Loading state)
-        const submitBtn = document.querySelector('.submit-btn');
+        const submitBtn = document.querySelector('.submit-btn-premium');
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "Listing your car...";
         submitBtn.style.opacity = "0.7";
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const apiHost = window.location.hostname || '127.0.0.1';
             const userId = user.id;
             console.log(`Attempting to list car for user ${userId} at ${apiHost}`);
-            fetch(`${CAR_API_URL}/store?userId=${userId}`, {
+            fetch(`${CAR_API_URL}?userId=${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

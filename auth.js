@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = fields[1].value;
 
             try {
-                const response = await fetch(`${AUTH_API_URL}/signin`, {
+                const response = await fetch(`${AUTH_API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ identifier, password })
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showAuthError(data.message);
                 }
             } catch (err) {
-                showAuthError("Connection Error: Could not reach the OTP service (Port 4000). Make sure 'START_ALL.bat' is running.");
+                showAuthError("Connection Error: " + err.message + " (Make sure 'START_ALL.bat' is running)");
                 console.error("OTP Verify Error:", err);
             }
         });

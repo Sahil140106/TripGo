@@ -335,38 +335,7 @@ body { font-family: sans-serif; margin: 0; background: var(--light-gray); }
     gap: 15px;
 }
 
-.icon-btn {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: #64748b;
-    position: relative;
-}
-
-.icon-btn:hover {
-    background: #f1f5f9;
-    color: #2563eb;
-    border-color: #cbd5e1;
-}
-
-.notification-badge {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 8px;
-    height: 8px;
-    background: #ef4444;
-    border-radius: 50%;
-    border: 2px solid white;
-    display: none;
-}
+/* Notification styles moved to style.css */
 
 .profile-trigger {
     border: 2px solid transparent;
@@ -377,29 +346,7 @@ body { font-family: sans-serif; margin: 0; background: var(--light-gray); }
     border-color: #2563eb;
 }
 
-.profile-dropdown {
-    position: absolute;
-    top: 120%;
-    right: 0;
-    width: 240px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #f1f5f9;
-    padding: 10px;
-    display: none;
-    z-index: 1000;
-    animation: slideDown 0.3s ease;
-}
-
-.profile-dropdown.active {
-    display: block;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+/* Profile dropdown animations moved to style.css */
 
 .dropdown-header {
     padding: 12px 15px;

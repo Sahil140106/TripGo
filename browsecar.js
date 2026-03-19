@@ -205,7 +205,7 @@ let allCars = [];
 
 async function fetchCars() {
     try {
-        const response = await fetch(`${CAR_API_URL}/all`);
+        const response = await fetch(`${CAR_API_URL}`);
         if (response.ok) {
             allCars = await response.json();
             renderCars();
@@ -493,8 +493,7 @@ function filterHandovers() {
 let allHandovers = [];
 async function fetchHandovers() {
     try {
-        const apiHost = window.location.hostname || '127.0.0.1';
-        const response = await fetch(`http://${apiHost}:8080/api/handovers`);
+        const response = await fetch(`${HANDOVER_API_URL}`);
         if (response.ok) {
             allHandovers = await response.json();
             window.allHandovers = allHandovers;
@@ -739,7 +738,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const apiHost = window.location.hostname || '127.0.0.1';
             try {
-                const response = await fetch(`http://${apiHost}:8080/api/handovers/store`, {
+                const response = await fetch(`${HANDOVER_API_URL}/store`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

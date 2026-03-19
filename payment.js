@@ -339,6 +339,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const start = pickupInput.value;
         const end = returnInput.value;
 
+        const baseUrl = API_BASE_URL;
+
         payBtn.disabled = true;
         payBtn.innerText = "Processing...";
 
@@ -362,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             console.log("PAYMENT DEBUG: Final Booking Payload to be sent:", JSON.stringify(bookingPayload, null, 2));
 
-            const bookingResponse = await fetch(`${baseUrl}/bookings/store`, {
+            const bookingResponse = await fetch(`${BOOKING_API_URL}/store`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bookingPayload)
@@ -377,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("PAYMENT DEBUG: Booking Created Successfully:", savedBooking);
 
             // 2. Create Payment Record
-            const paymentResponse = await fetch(`${baseUrl}/payments/store`, {
+            const paymentResponse = await fetch(`${API_BASE_URL}/payments/store`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -395,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 3. Update Car Status to BOOKED
             console.log("PAYMENT DEBUG: Updating Car Status to BOOKED for Car ID:", carId);
-            const statusResponse = await fetch(`${baseUrl}/cars/${carId}/status?status=BOOKED`, {
+            const statusResponse = await fetch(`${CAR_API_URL}/${carId}/status?status=BOOKED`, {
                 method: 'PATCH'
             });
 

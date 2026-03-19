@@ -308,6 +308,8 @@ function renderRecentHandovers() {
             status = meta.status || "PENDING";
         } catch(e) {}
 
+        if (h.takerId) status = "BOOKED";
+
         return `
             <tr>
                 <td style="padding: 12px 20px;"><strong>${h.carModel}</strong></td>
@@ -360,7 +362,10 @@ function renderRecentBookings() {
         
         return list.map(booking => {
             const car = carMap[booking.carId] || { name: `Car #${booking.carId}` };
-            const statusLabel = booking.status === 'CONFIRMED' ? 'Booked' : (booking.status || 'Pending');
+            let statusLabel = booking.status === 'CONFIRMED' ? 'Booked' : (booking.status || 'Pending');
+            
+            // If it's a handover booking, mark it as Handover
+            if (booking.isHandoverBooking) statusLabel = "Handover";
             
             return `
                 <tr class="booking-row" data-id="${booking.id}" style="cursor: pointer;">
@@ -426,7 +431,7 @@ function closeBookingModal() {
 
 async function fetchListedCars() {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/stats`);
+        const response = await fetch(`${CAR_API_URL}`); 
         if (response.ok) {
             myVehicles = await response.json();
             renderVehicles();
@@ -601,6 +606,8 @@ function renderHandovers() {
             status = meta.status || "PENDING";
         } catch(e) {}
 
+        if (h.takerId) status = "BOOKED";
+
         return `
             <tr>
                 <td><strong>${h.carModel}</strong></td>
@@ -645,12 +652,19 @@ function openFullDetailsModal() {
     document.getElementById('detail-type').textContent = currentActiveVehicle.type || 'N/A';
     document.getElementById('detail-transmission').textContent = currentActiveVehicle.transmission || 'N/A';
     document.getElementById('detail-seating').textContent = currentActiveVehicle.seating ? (currentActiveVehicle.seating + ' Seats') : 'N/A';
+    document.getElementById('detail-luggage').textContent = currentActiveVehicle.luggage ? (currentActiveVehicle.luggage + ' Bags') : 'N/A';
     document.getElementById('detail-fuelType').textContent = currentActiveVehicle.fuelType || 'N/A';
     document.getElementById('detail-fuelIncluded').textContent = currentActiveVehicle.fuelChargesIncluded ? 'Included in Price' : 'Not Included';
     document.getElementById('detail-price').textContent = currentActiveVehicle.pricePerDay ? ('₹' + currentActiveVehicle.pricePerDay.toLocaleString('en-IN') + '/day') : 'N/A';
+    document.getElementById('detail-deposit').textContent = currentActiveVehicle.refundableDeposit ? ('₹' + currentActiveVehicle.refundableDeposit.toLocaleString('en-IN')) : '₹0';
+    document.getElementById('detail-allowHandover').textContent = currentActiveVehicle.allowHandover ? 'Yes, Allowed' : 'No, Prohibited';
     document.getElementById('detail-location').textContent = currentActiveVehicle.location || 'N/A';
+    document.getElementById('detail-nearbyHub').textContent = currentActiveVehicle.nearbyHub || 'None';
     document.getElementById('detail-status').textContent = currentActiveVehicle.status || 'N/A';
-    document.getElementById('detail-owner').textContent = 'System User';
+    
+    // Owner Info
+    document.getElementById('detail-owner').textContent = currentActiveVehicle.ownerName || 'Unknown Owner';
+    document.getElementById('detail-owner-email').textContent = currentActiveVehicle.ownerEmail || 'N/A';
     
     document.getElementById('fullDetailsModalOverlay').classList.add('active');
     closeVehicleModal();

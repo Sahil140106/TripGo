@@ -169,14 +169,14 @@ function initNotificationBell() {
             
             try {
                 // Fetch all unread messages
-                const res = await fetch(`http://${apiHost}:8080/api/messages/user/${user.id}`);
+                const res = await fetch(`${MESSAGE_API_URL}/user/${user.id}`);
                 if (res.ok) {
                     const messages = await res.json();
                     const unread = messages.filter(m => !m.read);
                     
                     // Mark each as read
                     for (const m of unread) {
-                        await fetch(`http://${apiHost}:8080/api/messages/${m.id}/read`, { method: 'PATCH' });
+                        await fetch(`${MESSAGE_API_URL}/${m.id}/read`, { method: 'PATCH' });
                     }
                     
                     fetchMessages(); // Refresh UI without alert popup
@@ -197,11 +197,10 @@ function initNotificationBell() {
 
 function handleNotificationClick(id) {
     // Optionally mark as read and redirect
-    const apiHost = window.location.hostname || '127.0.0.1';
-    fetch(`http://${apiHost}:8080/api/messages/${id}`)
+    fetch(`${MESSAGE_API_URL}/${id}`)
         .then(res => res.json())
         .then(m => {
-            fetch(`http://${apiHost}:8080/api/messages/${m.id}/read`, { method: 'PATCH' });
+            fetch(`${MESSAGE_API_URL}/${m.id}/read`, { method: 'PATCH' });
             
             if (m.type === 'HANDOVER_PROMPT') {
                 const url = `browsecar.html?mode=handover&car=${encodeURIComponent(m.carName)}&bookingId=${m.bookingId}&prefill=true`;
@@ -215,14 +214,27 @@ function handleNotificationClick(id) {
 
 function updateNotificationBadge(messages) {
     const badge = document.getElementById('notifBadge');
+    const bellBtn = document.getElementById('notificationBtn');
     if (!badge) return;
     
     const unreadCount = messages.filter(m => !m.read).length;
     if (unreadCount > 0) {
+        const hasIncreased = parseInt(badge.innerText) < unreadCount;
         badge.innerText = unreadCount;
         badge.style.display = 'flex';
+        
+        if (hasIncreased) {
+            badge.classList.remove('pop');
+            void badge.offsetWidth; // Trigger reflow
+            badge.classList.add('pop');
+            
+            if (bellBtn) {
+                bellBtn.classList.add('pulse-ring');
+            }
+        }
     } else {
         badge.style.display = 'none';
+        if (bellBtn) bellBtn.classList.remove('pulse-ring');
     }
 }
 
@@ -237,46 +249,42 @@ function renderNotificationDropdown(messages) {
 
     list.innerHTML = messages.slice(0, 5).map(m => {
         let title = "New Notification";
-        let iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`;
+        let iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>`;
+        let iconBg = "#f1f5f9";
         let iconColor = "#64748b";
 
-        if (m.type === 'CONFIRMATION' || m.type === 'BOOKED') { 
-            title = "Booking Booked!"; 
-            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-            iconColor = "#ecfdf5";
+        const mType = (m.type || '').toUpperCase();
+        if (mType === 'CONFIRMATION' || mType === 'BOOKED') { 
+            title = "Car Booked!"; 
+            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            iconBg = "#ecfdf5"; iconColor = "#059669";
+        } else if (mType === 'NEW_BOOKING') { 
+            title = "New Booking Received"; 
+            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>`;
+            iconBg = "#eef2ff"; iconColor = "#4f46e5";
+        } else if (mType === 'HANDOVER' || mType === 'HANDOVER_ACCEPTED') { 
+            title = "Handover Update"; 
+            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`;
+            iconBg = "#fff7ed"; iconColor = "#ea580c";
+        } else if (mType === 'HANDOVER_PROMPT') { 
+            title = "Action Required: Handover"; 
+            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>`;
+            iconBg = "#eff6ff"; iconColor = "#2563eb";
         }
-        if (m.type === 'NEW_BOOKING') { 
-            title = "New Booking for Car"; 
-            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>`;
-            iconColor = "#eef2ff";
-        }
-        if (m.type === 'HANDOVER') { 
-            title = "Trip Handover Update"; 
-            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`;
-            iconColor = "#fff7ed";
-        }
-        if (m.type === 'HANDOVER_PROMPT') { 
-            title = "Handover Your Car!"; 
-            iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>`;
-            iconColor = "#eff6ff";
-        }
-
-        const status = m.status || 'PENDING';
-        const showStatus = m.type === 'EARLY_END_REQUEST';
 
         return `
-            <div style="padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; background: ${m.read ? 'white' : '#f0f7ff'};" onclick="handleNotificationClick(${m.id})">
-                <div style="display: flex; gap: 12px; align-items: flex-start;">
-                    <div style="min-width: 32px; height: 32px; border-radius: 8px; background: ${iconColor}; display: flex; align-items: center; justify-content: center;">
+            <div class="notif-dropdown-item" style="padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; background: ${m.read ? 'white' : '#f8faff'}; transition: all 0.2s;" onclick="handleNotificationClick(${m.id})" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${m.read ? 'white' : '#f8faff'}'">
+                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div style="min-width: 40px; height: 40px; border-radius: 12px; background: ${iconBg}; display: flex; align-items: center; justify-content: center; color: ${iconColor};">
                         ${iconSvg}
                     </div>
                     <div style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <p style="margin: 0; font-size: 13px; font-weight: 600; color: #1e293b;">${title}</p>
-                            ${showStatus ? `<span style="font-size: 10px; font-weight: 700; color: ${status === 'ACCEPTED' ? '#10b981' : (status === 'REJECTED' ? '#ef4444' : '#64748b')}; text-transform: uppercase;">${status}</span>` : ''}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                            <p style="margin: 0; font-size: 13px; font-weight: 700; color: #1e293b;">${title}</p>
+                            ${!m.read ? '<span style="width: 6px; height: 6px; background: #2563eb; border-radius: 50%;"></span>' : ''}
                         </div>
-                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${m.carName}</p>
-                        <small style="color: #94a3b8; font-size: 10px;">${new Date(m.timestamp).toLocaleString()}</small>
+                        <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;">${m.carName || 'Message Update'}</p>
+                        <small style="color: #94a3b8; font-size: 10px; font-weight: 500; margin-top: 4px; display: block;">${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
                     </div>
                 </div>
             </div>
@@ -303,8 +311,7 @@ async function fetchDashboardStats() {
     }
 
     console.log("Fetching dashboard stats for user:", user.id);
-    const apiHost = window.location.hostname || '127.0.0.1';
-    const baseUrl = `http://${apiHost}:8080/api`;
+    const baseUrl = API_BASE_URL;
 
     try {
         // 0. Fetch User to get latest points
@@ -409,7 +416,7 @@ async function redeemPromoCode() {
         const apiHost = window.location.hostname || '127.0.0.1';
         
         try {
-            const response = await fetch(`http://${apiHost}:8080/api/auth/users/${user.id}/add-points?amount=${amount}`, {
+            const response = await fetch(`${API_BASE_URL}/auth/users/${user.id}/add-points?amount=${amount}`, {
                 method: 'POST'
             });
             if (response.ok) {
@@ -456,7 +463,7 @@ async function processPointConversion() {
     confirmBtn.innerText = "Generating...";
 
     try {
-        const response = await fetch(`http://${apiHost}:8080/api/auth/vouchers/generate?userId=${user.id}&amount=${amount}`, {
+        const response = await fetch(`${API_BASE_URL}/auth/vouchers/generate?userId=${user.id}&amount=${amount}`, {
             method: 'POST'
         });
 
