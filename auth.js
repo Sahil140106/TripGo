@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (err) {
-                showAuthError("Failed to send OTP.");
+                showAuthError("Failed to send OTP: " + err.message);
             } finally {
                 sendOtpBtn.disabled = false;
             }
