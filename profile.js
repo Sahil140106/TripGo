@@ -581,7 +581,10 @@ function renderRecentBookings(bookings, carMap) {
                                         car.allowHandover !== false && 
                                         !isHandover;
 
-            console.log(`PROFILE DEBUG: Booking ${booking.id} - StatusValue: ${statusValue}, StatusLabel: ${statusLabel}, allowHandover: ${car.allowHandover}, isHandover: ${isHandover}, CanInitiate: ${canInitiateHandover}`);
+            const hasReviewed = (window.userReviews || []).some(r => parseInt(r.carId) === parseInt(booking.carId));
+            const canRate = statusValue === 'COMPLETED' && !hasReviewed;
+
+            console.log(`PROFILE DEBUG: Booking ${booking.id} - StatusValue: ${statusValue}, StatusLabel: ${statusLabel}, allowHandover: ${car.allowHandover}, isHandover: ${isHandover}, CanInitiate: ${canInitiateHandover}, CanRate: ${canRate}`);
             
             return `
                 <tr class="booking-row" data-id="${booking.id}" style="border-bottom: 1px solid #f1f5f9; cursor: pointer;">
@@ -604,6 +607,14 @@ function renderRecentBookings(bookings, carMap) {
                                     onclick="event.stopPropagation(); 
                                     openInitiateHandover('${car.id}', '${car.name}', '${booking.id}', '${car.ownerName || ''}', '${car.ownerEmail || ''}', ${booking.totalAmount || 0}, ${car.pricePerDay || 0}, '${booking.startDate}', '${booking.endDate}', '${car.location || ''}', '${car.imageUrl || ''}', '${car.nearbyHub || ''}')">
                                 Initiate Handover
+                            </button>` 
+                        : ''}
+                        ${canRate ? `
+                            <button class="action-btn primary rate-car-btn" 
+                                    style="display: block; width: 100%; margin-top: 8px; padding: 4px 8px; font-size: 11px; border-radius: 12px; background: #16a34a; color: white; border: none; cursor: pointer; font-weight: 600;" 
+                                    onclick="event.stopPropagation(); 
+                                    openRateModal('${car.id}', '${car.name.replace(/'/g, "\\'")}')">
+                                Rate this Car
                             </button>` 
                         : ''}
                     </td>
@@ -1574,7 +1585,7 @@ function renderMessages(messages) {
             
             ${isEarlyEndReq ? `
             <div style="display: flex; gap: 12px; margin-top: 15px;">
-                <button class="action-btn primary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; background: #16a34a; border: none;" onclick="approveEarlyEnd(${m.id}, ${m.bookingId}, '${m.endDate}')">Approve Request</button>
+                <button class="action-btn primary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; background: #16a34a; border: none;" onclick="approveEarlyEnd(${m.id}, ${m.bookingId}, '${m.endDate}', '${m.carId}', '${m.carName.replace(/'/g, "\\'")}')">Approve Request</button>
                 <button class="action-btn secondary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; color: #dc2626; border-color: #dc2626;" onclick="rejectEarlyEnd(${m.id})">Decline</button>
             </div>` : ''}
 
@@ -1590,7 +1601,7 @@ function renderMessages(messages) {
     `}).join('');
 }
 
-async function approveEarlyEnd(messageId, bookingId, newEndDate) {
+async function approveEarlyEnd(messageId, bookingId, newEndDate, carId, carName) {
     if (!bookingId || bookingId === 'null' || bookingId === 'undefined') {
         alert("Error: Booking ID is missing. This request may be from an older version of the system.");
         return;
@@ -1606,6 +1617,11 @@ async function approveEarlyEnd(messageId, bookingId, newEndDate) {
 
         if (response.ok) {
             alert("Early completion approved!");
+            // Suggest rating the car - but ONLY if they haven't rated it yet
+            const hasReviewed = (window.userReviews || []).some(r => parseInt(r.carId) === parseInt(carId));
+            if (!hasReviewed && confirm("Trip completed! Would you like to rate this car now?")) {
+                openRateModal(carId || '0', carName || 'this car');
+            }
             // Mark the message as read
             await fetch(`${MESSAGE_API_URL}/${messageId}/read`, { method: 'PATCH' });
             fetchMessages();
@@ -1811,7 +1827,9 @@ function initProfilePage() {
     });
 
     // Initial data load
-    fetchDashboardStats();
+    fetchUserReviews().then(() => {
+        fetchDashboardStats();
+    });
     
     // Check if we started on a specific tab (optional, can be expanded)
     const urlParams = new URLSearchParams(window.location.search);

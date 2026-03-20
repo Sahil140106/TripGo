@@ -309,7 +309,11 @@ function renderCars() {
                             <p class="car-meta" style="margin-top: -10px;">Owner: ${car.ownerName || 'Rajesh Kumar'} | <i class="fas fa-briefcase"></i> Luggage: ${car.luggage || 2}</p>
                             <div class="price-rating" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                                 <span class="price" style="color: #2563eb; font-size: 20px; font-weight: 800;">₹${price}<span style="font-size: 13px; color: #64748b; font-weight: 400;">/day</span></span>
-                                <span class="rating" style="color: #f59e0b; font-weight: 700; font-size: 14px;"><i class="fas fa-star"></i> 4.8</span>
+                                <span class="rating" style="color: #f59e0b; font-weight: 700; font-size: 14px;">
+                                    <i class="fas fa-star"></i> 
+                                    ${car.averageRating ? car.averageRating.toFixed(1) : '0.0'} 
+                                    <span style="color: #94a3b8; font-weight: 400; font-size: 12px;">(${car.reviewCount || 0})</span>
+                                </span>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
                                 <button class="view-btn" style="flex: 1; background: #2563eb; color: white;" onclick="openModal(this.closest('.car-card'))">Details</button>
@@ -345,7 +349,9 @@ function openModal(card) {
     const fuel = card.getAttribute('data-fuel');
     const owner = card.getAttribute('data-owner') || 'Unknown Owner';
     const hub = card.getAttribute('data-hub') || 'Mumbai Central';
+    const carId = card.getAttribute('data-id');
 
+    carModal.setAttribute('data-current-car-id', carId);
     modalTitle.textContent = title;
     modalImg.src = img;
     modalPrice.textContent = `₹${price}`;
@@ -375,9 +381,27 @@ function openModal(card) {
     const modalBookBtn = document.getElementById('modalBookBtn');
     if (modalBookBtn) modalBookBtn.onclick = () => handleBooking(title);
 
+    // Rating and Reviews Integration
+    const viewReviewsBtn = document.getElementById('viewReviewsBtn');
+    const rateCarBtn = document.getElementById('rateCarBtn');
+    
+    if (viewReviewsBtn) viewReviewsBtn.onclick = () => openReviewsModal(carId);
+
+    // Check if user has already reviewed this car
+    const hasReviewed = (window.userReviews || []).some(r => parseInt(r.carId) === parseInt(carId));
+    if (rateCarBtn) {
+        if (hasReviewed) {
+            rateCarBtn.style.display = 'none';
+        } else {
+            rateCarBtn.style.display = 'block';
+            rateCarBtn.onclick = () => openRateModal(carId, title);
+        }
+    }
+
     carModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
+
 
 function closeModal() {
     document.getElementById('carModal').classList.remove('active');
@@ -749,6 +773,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    const submitBtn = document.getElementById('submitReviewBtnModal');
+    if (submitBtn) submitBtn.onclick = submitReview;
+
     const closeHandoverV2 = document.getElementById('closeHandoverModalV2');
     if (closeHandoverV2) closeHandoverV2.onclick = closeHandoverModal;
 
@@ -863,3 +890,41 @@ window.onclick = function (event) {
     if (event.target.id === 'carModal') closeModal();
     if (event.target.id === 'handoverModal') closeHandoverModal();
 }
+
+// Auto-Review Prompt from URL
+window.addEventListener('load', async () => {
+    // Ensure we have user reviews before checking
+    await fetchUserReviews();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const reviewCarId = urlParams.get('reviewCarId');
+    if (reviewCarId) {
+        console.log("Auto-review target detected for car ID:", reviewCarId);
+        
+        // --- PERSISTENCE FIX: Clear URL parameter immediately so it doesn't re-trigger on refresh ---
+        const newUrl = window.location.pathname; 
+        window.history.replaceState({}, document.title, newUrl);
+
+        // Wait for cars to render then find and open modal
+        let attempts = 0;
+        const checkExist = setInterval(() => {
+            const hasReviewed = (window.userReviews || []).some(r => parseInt(r.carId) === parseInt(reviewCarId));
+            if (hasReviewed) {
+                console.log("User has already reviewed this car. Skipping auto-prompt.");
+                clearInterval(checkExist);
+                return;
+            }
+
+            const carCard = document.querySelector(`.car-card[data-id="${reviewCarId}"]`);
+            if (carCard) {
+                clearInterval(checkExist);
+                openModal(carCard);
+                // Auto open rate modal
+                if (typeof openRateModal === 'function') {
+                    openRateModal(reviewCarId, carCard.querySelector('h3').textContent);
+                }
+            }
+            if (++attempts > 20) clearInterval(checkExist);
+        }, 500);
+    }
+});

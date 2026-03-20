@@ -259,3 +259,254 @@ function initProfileDropdown() {
 document.addEventListener('DOMContentLoaded', () => {
     initProfileDropdown();
 });
+
+// --- Shared Review & Rating Modal Logic (Global Scope) ---
+function renderStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= Math.floor(rating)) {
+            stars += '<i class="fas fa-star" style="color: #f59e0b;"></i>';
+        } else if (i === Math.ceil(rating) && rating % 1 !== 0) {
+            stars += '<i class="fas fa-star-half-alt" style="color: #f59e0b;"></i>';
+        } else {
+            stars += '<i class="far fa-star" style="color: #cbd5e1;"></i>';
+        }
+    }
+    return stars;
+}
+
+async function loadReviews(carId, targetElementId = 'reviewsListPopup') {
+    const reviewsList = document.getElementById(targetElementId);
+    if (!reviewsList) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/reviews/car/${carId}`);
+        const reviews = await response.json();
+
+        if (reviews.length === 0) {
+            reviewsList.innerHTML = '<p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">No reviews yet. Be the first to rate this car!</p>';
+        } else {
+            reviewsList.innerHTML = reviews.map(r => {
+                // Generate initials if no profile pic
+                const initials = r.userName ? r.userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '?';
+                const avatarContent = (r.userProfilePic && r.userProfilePic.trim() !== "") 
+                    ? `<img src="${r.userProfilePic}" style="width: 100%; height: 100%; object-fit: cover;">`
+                    : `<span style="font-weight: 700; color: #3b82f6; font-size: 14px;">${initials}</span>`;
+
+                return `
+                <div class="review-item" style="margin-bottom: 30px; padding: 20px; background: #fafafa; border-radius: 16px; border: 1px solid #f1f5f9;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 44px; height: 44px; background: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                ${avatarContent}
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">${r.userName || 'Verified User'}</h4>
+                                <span style="font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${new Date(r.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 4px 8px; border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <i class="fas fa-star" style="color: #f59e0b; font-size: 12px;"></i>
+                            <span style="font-weight: 800; font-size: 13px; color: #1e293b;">${r.rating}</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0; padding-left: 2px;">${r.comment}</p>
+                </div>
+                `;
+            }).join('');
+        }
+    } catch (err) {
+        console.error("Failed to load reviews:", err);
+        reviewsList.innerHTML = '<p style="color: #ef4444; font-size: 13px; text-align: center; padding: 20px;">Error loading reviews.</p>';
+    }
+}
+
+function openReviewsModal(carId) {
+    const overlay = document.getElementById('reviewsModalOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    document.getElementById('reviewsListPopup').innerHTML = '<p style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</p>';
+    loadReviews(carId, 'reviewsListPopup');
+}
+
+function closeReviewsModal() {
+    const overlay = document.getElementById('reviewsModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function openRateModal(carId, carName) {
+    const modal = document.getElementById('rateModalOverlay');
+    if (!modal) return;
+    modal.setAttribute('data-current-car-id', carId);
+    document.getElementById('rateCarName').textContent = carName;
+    
+    // Reset Form
+    document.getElementById('reviewCommentModal').value = '';
+    document.getElementById('selectedRatingModal').value = '0';
+    document.querySelectorAll('.rating-star-modal').forEach(s => {
+        s.style.color = '#cbd5e1';
+        s.classList.replace('fas', 'far');
+    });
+    
+    modal.style.display = 'flex';
+}
+
+function closeRateModal() {
+    const modal = document.getElementById('rateModalOverlay');
+    if (modal) modal.style.display = 'none';
+}
+
+
+// --- Review Prevention System ---
+window.userReviews = [];
+
+async function fetchUserReviews() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/reviews/user/${user.id}`);
+        if (response.ok) {
+            window.userReviews = await response.json();
+            console.log("FRESH REVIEWS FETCHED:", window.userReviews);
+        }
+    } catch (err) {
+        console.error("Failed to fetch user reviews:", err);
+    }
+}
+
+// Update submitReview to refresh the list
+async function submitReview() {
+    const carId = document.getElementById('rateModalOverlay').getAttribute('data-current-car-id');
+    const rating = document.getElementById('selectedRatingModal').value;
+    const comment = document.getElementById('reviewCommentModal').value;
+    const errorEl = document.getElementById('reviewErrorModal');
+    const submitBtn = document.getElementById('submitReviewBtnModal');
+
+    if (!rating || rating === '0') {
+        errorEl.textContent = "Please select a star rating.";
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    if (!comment.trim()) {
+        errorEl.textContent = "Please share your experience.";
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        alert("Please login to submit a review.");
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+
+    try {
+        const payload = {
+            carId: parseInt(carId),
+            userId: user.id,
+            userName: user.fullName || user.name || 'Verified User',
+            userProfilePic: user.profilePic || null, 
+            rating: parseInt(rating),
+            comment: comment.trim()
+        };
+
+        const response = await fetch(`${API_BASE_URL}/reviews/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert("Thank you! Your review has been submitted.");
+            closeRateModal();
+            
+            // Refresh reviews list
+            await fetchUserReviews();
+            
+            // Refresh UI if necessary
+            if (typeof renderRecentBookings === 'function') {
+                // We need to re-render the bookings to hide the button
+                // This might need a reference to the data, 
+                // but usually fetchDashboardStats does this.
+                if (typeof fetchDashboardStats === 'function') fetchDashboardStats();
+            }
+            
+            // Refresh cars if on browse page
+            if (typeof fetchCars === 'function') fetchCars();
+        } else {
+            const err = await response.text();
+            throw new Error(err || "Failed to submit review.");
+        }
+    } catch (err) {
+        console.error("Review error:", err);
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit My Review";
+    }
+}
+
+// Event delegation for Review Modal Star Behavior
+document.addEventListener('mouseover', (e) => {
+    if (e.target.classList.contains('rating-star-modal')) {
+        const val = parseInt(e.target.getAttribute('data-value'));
+        const stars = document.querySelectorAll('.rating-star-modal');
+        stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value'));
+            if (sVal <= val) {
+                s.style.color = '#f59e0b';
+                s.classList.replace('far', 'fas');
+            } else {
+                s.style.color = '#cbd5e1';
+                s.classList.replace('fas', 'far');
+            }
+        });
+    }
+});
+
+document.addEventListener('mouseout', (e) => {
+    if (e.target.classList.contains('rating-star-modal')) {
+        const selected = parseInt(document.getElementById('selectedRatingModal').value) || 0;
+        const stars = document.querySelectorAll('.rating-star-modal');
+        stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value'));
+            if (sVal <= selected) {
+                s.style.color = '#f59e0b';
+                s.classList.replace('far', 'fas');
+            } else {
+                s.style.color = '#cbd5e1';
+                s.classList.replace('fas', 'far');
+            }
+        });
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('rating-star-modal')) {
+        const val = e.target.getAttribute('data-value');
+        document.getElementById('selectedRatingModal').value = val;
+        const stars = document.querySelectorAll('.rating-star-modal');
+        stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value'));
+            if (sVal <= parseInt(val)) {
+                s.style.color = '#f59e0b';
+                s.classList.replace('far', 'fas');
+            } else {
+                s.style.color = '#cbd5e1';
+                s.classList.replace('fas', 'far');
+            }
+        });
+    }
+    
+    if (e.target.id === 'submitReviewBtnModal') {
+        submitReview();
+    }
+    
+    if (event.target.id === 'reviewsModalOverlay') closeReviewsModal();
+    if (event.target.id === 'rateModalOverlay') closeRateModal();
+});
