@@ -301,7 +301,10 @@ function renderCars() {
 
                 return `
                     <div class="car-card" data-id="${car.id}" data-price="${price}" data-type="${carType}" data-location="${location}" 
-                         data-name="${name}">
+                         data-name="${name}" data-fuel="${fuelType}" data-owner="${car.ownerName || 'Rajesh Kumar'}" 
+                         data-hub="${car.nearbyHub || 'Mumbai Central'}" data-seats="${car.seating || 5}" 
+                         data-trans="${car.transmission || 'Automatic'}" data-luggage="${car.luggage || 2}"
+                         data-handover="${car.allowHandover}">
                         <div class="car-image">
                             <span class="badge ${status === 'AVAILABLE' ? 'available' : 'booked'}">${status}</span>
                             ${img ? `<img src="${img}" alt="${name}">` : '<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#eee;">No Image</div>'}

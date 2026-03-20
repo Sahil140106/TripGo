@@ -12,17 +12,29 @@ async function syncEntity(name, localPath, renderPath, uniqueKey = 'id') {
         console.log(`Found ${localData.length} ${name} locally.`);
 
         const renderRes = await fetch(`${API_BASE_RENDER}${localPath}`);
-        const renderData = await renderRes.json();
-        const renderKeys = renderData.map(item => item[uniqueKey]);
-        console.log(`Found ${renderData.length} ${name} on Render.`);
+        let renderData = [];
+        try {
+            renderData = await renderRes.json();
+        } catch (e) {
+            console.warn(`Warning: Could not fetch ${name} list from Render (maybe endpoint not ready).`);
+            renderData = [];
+        }
+        
+        // Case-insensitive key matching for emails
+        const renderKeys = Array.isArray(renderData) 
+            ? renderData.map(item => String(item[uniqueKey] || '').toLowerCase()) 
+            : [];
+            
+        console.log(`Found ${renderKeys.length} ${name} on Render.`);
 
         for (const item of localData) {
-            if (renderKeys.includes(item[uniqueKey])) {
-                // console.log(`Skipping existing ${name}: ${item[uniqueKey]}`);
+            const val = String(item[uniqueKey] || '').toLowerCase();
+            if (renderKeys.includes(val)) {
+                // console.log(`Skipping existing ${name}: ${val}`);
                 continue;
             }
 
-            console.log(`Syncing ${name}: ${item[uniqueKey]}...`);
+            console.log(`Syncing ${name}: ${val}...`);
             const postRes = await fetch(`${API_BASE_RENDER}${renderPath || localPath}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -37,9 +49,9 @@ async function syncEntity(name, localPath, renderPath, uniqueKey = 'id') {
 
 async function startSync() {
     // Order matters for foreign keys
-    await syncEntity('Admins', '/auth/admins', '/auth/admins/store', 'email');
+    await syncEntity('Admins', '/auth/management-list', '/auth/management-store', 'email');
     await syncEntity('Users', '/auth/users', '/auth/users/store', 'email');
-    await syncEntity('Cars', '/cars', '/cars', 'name'); // Cars don't have a specific store endpoint usually, standard POST works
+    await syncEntity('Cars', '/cars', '/cars', 'name');
     await syncEntity('ListedCars', '/listed-cars', '/listed-cars/store', 'id');
     await syncEntity('Bookings', '/bookings', '/bookings/store', 'id');
     await syncEntity('Handovers', '/handovers', '/handovers/store', 'bookingId');
