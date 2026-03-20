@@ -247,12 +247,6 @@ async function fetchCars() {
                 allCars = staticCars;
             }
             
-            // Diagnostic Overlay
-            const diag = document.createElement('div');
-            diag.id = 'diag-overlay';
-            diag.style = "position:fixed; bottom:70px; left:10px; background:rgba(0,0,0,0.8); color:chartreuse; padding:10px; z-index:10000; font-size:12px; border-radius:5px;";
-            diag.innerHTML = `Loaded: ${allCars.length} cars.<br>First 5: ${allCars.slice(0,5).map(c=>c.name).join(', ')}`;
-            document.body.appendChild(diag);
 
             renderCars();
         } else {
