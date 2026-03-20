@@ -60,7 +60,7 @@ function openVehicleModal(vehicle) {
         detailCard.appendChild(row);
 
         // Fetch current renter from history (assuming most recent is current)
-        fetch(`http://${apiHost}:8080/api/cars/${vehicle.id}/history`)
+        fetch(`${CAR_API_URL}/${vehicle.id}/history`)
             .then(res => res.json())
             .then(history => {
                 const nameEl = document.getElementById('currentRenterName');
@@ -99,7 +99,7 @@ async function viewRentalHistory() {
     if (!carId) return;
 
     try {
-        const response = await fetch(`http://${apiHost}:8080/api/cars/${carId}/history`);
+        const response = await fetch(`${CAR_API_URL}/${carId}/history`);
         if (response.ok) {
             const history = await response.json();
             renderHistory(history);
@@ -164,7 +164,7 @@ async function openUserProfile(userId, journeyInfo = null) {
     document.getElementById('userModalAvatar').innerHTML = '?';
 
     try {
-        const response = await fetch(`http://${apiHost}:8080/api/auth/users/${userId}`);
+        const response = await fetch(`${AUTH_API_URL}/users/${userId}`);
         
         if (response.ok) {
             const userData = await response.json();
@@ -355,13 +355,13 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             try {
-                let url = `http://${apiHost}:8080/api/cars`;
+                let url = CAR_API_URL;
                 let method = 'POST';
                 if (editId >= 0) {
-                    url = `http://${apiHost}:8080/api/cars/${editId}`;
+                    url = `${CAR_API_URL}/${editId}`;
                     method = 'PUT';
                 } else {
-                    url = `http://${apiHost}:8080/api/cars?userId=${user.id}`;
+                    url = `${CAR_API_URL}?userId=${user.id}`;
                 }
 
                 const response = await fetch(url, {
