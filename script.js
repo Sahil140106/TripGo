@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const selected = e.target.value;
             try {
                 const apiHost = window.location.hostname || '127.0.0.1';
-                const response = await fetch(`http://${apiHost}:8080/api/cars`);
+                const response = await fetch(CAR_API_URL);
                 if (response.ok) {
                     const allCarsFromBackend = await response.json();
                     const filtered = allCarsFromBackend.filter(car => selected === "All" || car.type === selected);

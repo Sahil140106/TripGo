@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const apiHost = window.location.hostname || '127.0.0.1';
-            const url = handoverId ? `http://${apiHost}:8080/api/handovers/${handoverId}` : `http://${apiHost}:8080/api/handovers/store`;
+            const url = handoverId ? `${HANDOVER_API_URL}/${handoverId}` : `${HANDOVER_API_URL}/store`;
             const method = handoverId ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 // Notify Admin (Only on new listings for now, or both?)
                 if (!handoverId) {
-                    await fetch(`http://${apiHost}:8080/api/messages/sendDirect`, {
+                    await fetch(`${MESSAGE_API_URL}/sendDirect`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

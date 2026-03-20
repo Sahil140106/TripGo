@@ -723,7 +723,7 @@ async function cancelBooking() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
         const apiHost = window.location.hostname || '127.0.0.1';
-        const baseUrl = `http://${apiHost}:8080/api`;
+        const baseUrl = API_BASE_URL;
 
         // 1. Update the booking status to CANCELLED
         const updateRes = await fetch(`${baseUrl}/bookings/${currentActiveBooking.id}/status?status=CANCELLED`, {
@@ -882,9 +882,9 @@ async function submitEarlyEndRequest() {
 
     try {
         const apiHost = window.location.hostname || '127.0.0.1';
-        const baseUrl = `http://${apiHost}:8080/api`;
+        const baseUrl = API_BASE_URL;
 
-        const response = await fetch(`${baseUrl}/bookings/${currentActiveBooking.id}/request-early-completion?newEndDate=${newEndDate}`, {
+        const response = await fetch(`${BOOKING_API_URL}/${currentActiveBooking.id}/request-early-completion?newEndDate=${newEndDate}`, {
             method: 'POST'
         });
 
@@ -990,7 +990,7 @@ async function openVehicleDetails(index) {
         historyBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Loading history...</td></tr>';
         try {
             const apiHost = window.location.hostname || '127.0.0.1';
-            const response = await fetch(`http://${apiHost}:8080/api/cars/${vehicle.id}/history`);
+            const response = await fetch(`${CAR_API_URL}/${vehicle.id}/history`);
             if (response.ok) {
                 const history = await response.json();
                 if (history.length === 0) {
@@ -1056,12 +1056,12 @@ async function deleteVehicle() {
     if (confirm(`Are you sure you want to delete "${currentActiveVehicle.name}"? This action cannot be undone.`)) {
         try {
             const apiHost = window.location.hostname || '127.0.0.1';
-            const response = await fetch(`http://${apiHost}:8080/api/cars/${currentActiveVehicle.id}`, {
+            const response = await fetch(`${CAR_API_URL}/${currentActiveVehicle.id}`, {
                 method: 'DELETE'
             });
             if (response.ok) {
                 // Notify Admin
-                await fetch(`http://${apiHost}:8080/api/messages/sendDirect`, {
+                await fetch(`${MESSAGE_API_URL}/sendDirect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1091,7 +1091,7 @@ let activeHandovers = [];
 async function fetchHandovers() {
     try {
         const apiHost = window.location.hostname || '127.0.0.1';
-        const response = await fetch(`http://${apiHost}:8080/api/handovers`);
+        const response = await fetch(HANDOVER_API_URL);
         if (response.ok) {
             const data = await response.json();
             activeHandovers = data.reverse(); 
@@ -1200,7 +1200,7 @@ async function acceptHandover(id) {
         const apiHost = window.location.hostname || '127.0.0.1';
         
         // 1. Fetch handover details to get initiator info
-        const hRes = await fetch(`http://${apiHost}:8080/api/handovers`);
+        const hRes = await fetch(HANDOVER_API_URL);
         if (hRes.ok) {
             const handovers = await hRes.json();
             const h = handovers.find(item => item.id === id);
@@ -1215,7 +1215,7 @@ async function acceptHandover(id) {
                 meta.acceptedBy = user.id;
                 meta.acceptedByName = user.fullName;
                 
-                await fetch(`http://${apiHost}:8080/api/handovers/${id}`, {
+                await fetch(`${HANDOVER_API_URL}/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -1227,7 +1227,7 @@ async function acceptHandover(id) {
                 });
 
                 // 2. Send confirmation to the taker (the person who accepted it)
-                await fetch(`http://${apiHost}:8080/api/messages/sendDirect`, {
+                await fetch(`${MESSAGE_API_URL}/sendDirect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1245,7 +1245,7 @@ async function acceptHandover(id) {
                 });
 
                 // 3. Notify Admin
-                await fetch(`http://${apiHost}:8080/api/messages/sendDirect`, {
+                await fetch(`${MESSAGE_API_URL}/sendDirect`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1293,7 +1293,7 @@ async function cancelHandover(id) {
     if(!confirm("Cancel this handover listing?")) return;
     try {
         const apiHost = window.location.hostname || '127.0.0.1';
-        const res = await fetch(`http://${apiHost}:8080/api/handovers/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${HANDOVER_API_URL}/${id}`, { method: 'DELETE' });
         if (res.ok) {
             alert("Handover cancelled and deleted.");
             fetchHandovers();
@@ -1377,7 +1377,7 @@ async function deleteHandoverListing(id) {
     if (!confirm("Are you sure you want to delete this handover listing? This action cannot be undone.")) return;
     try {
         const apiHost = window.location.hostname || '127.0.0.1';
-        const res = await fetch(`http://${apiHost}:8080/api/handovers/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${HANDOVER_API_URL}/${id}`, { method: 'DELETE' });
         if (res.ok) {
             alert("Handover listing deleted successfully.");
             closeHandoverDetailsModal();
@@ -1446,7 +1446,7 @@ async function fetchMessages(isBackground = false) {
     }
 
     try {
-        const response = await fetch(`http://${apiHost}:8080/api/messages/user/${user.id}`);
+        const response = await fetch(`${MESSAGE_API_URL}/user/${user.id}`);
         if (response.ok) {
             const messages = await response.json();
             
@@ -1600,14 +1600,14 @@ async function approveEarlyEnd(messageId, bookingId, newEndDate) {
 
     try {
         const apiHost = window.location.hostname || '127.0.0.1';
-        const response = await fetch(`http://${apiHost}:8080/api/bookings/${bookingId}/approve-early-completion?newEndDate=${encodeURIComponent(newEndDate)}`, {
+        const response = await fetch(`${BOOKING_API_URL}/${bookingId}/approve-early-completion?newEndDate=${encodeURIComponent(newEndDate)}`, {
             method: 'POST'
         });
 
         if (response.ok) {
             alert("Early completion approved!");
             // Mark the message as read
-            await fetch(`http://${apiHost}:8080/api/messages/${messageId}/read`, { method: 'PATCH' });
+            await fetch(`${MESSAGE_API_URL}/${messageId}/read`, { method: 'PATCH' });
             fetchMessages();
             fetchDashboardStats();
         } else {
@@ -1623,7 +1623,7 @@ async function rejectEarlyEnd(messageId) {
     if (!confirm("Are you sure you want to decline this request?")) return;
     try {
         const apiHost = window.location.hostname || '127.0.0.1';
-        await fetch(`http://${apiHost}:8080/api/messages/${messageId}/read`, { method: 'PATCH' });
+        await fetch(`${MESSAGE_API_URL}/${messageId}/read`, { method: 'PATCH' });
         alert("Request declined.");
         fetchMessages();
     } catch (err) { console.error(err); }
@@ -1668,7 +1668,7 @@ async function openUserProfile(userId, journeyInfo = null) {
 
     try {
         const apiHost = window.location.hostname || '127.0.0.1';
-        const response = await fetch(`http://${apiHost}:8080/api/auth/users/${userId}`);
+        const response = await fetch(`${AUTH_API_URL}/users/${userId}`);
         
         if (response.ok) {
             const userData = await response.json();
@@ -1774,7 +1774,7 @@ function initProfilePage() {
             };
             try {
                 const apiHost = window.location.hostname || '127.0.0.1';
-                const response = await fetch(`http://${apiHost}:8080/api/cars/${id}`, {
+                const response = await fetch(`${CAR_API_URL}/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedData)
@@ -1850,7 +1850,7 @@ function toggleDebugOverlay() {
     `;
     document.body.appendChild(overlay);
     
-    fetch(`http://${apiHost}:8080/api/cars`)
+    fetch(CAR_API_URL)
         .then(r => {
             document.getElementById('debug-api-status').innerText = `API Status: ${r.ok ? 'ONLINE' : 'ERROR ' + r.status}`;
             document.getElementById('debug-api-status').style.color = r.ok ? '#0f0' : '#f00';
@@ -1887,7 +1887,7 @@ async function renderTransactions() {
     const apiHost = window.location.hostname || '127.0.0.1';
 
     try {
-        const res = await fetch(`http://${apiHost}:8080/api/transactions/user/${user.id}`);
+        const res = await fetch(`${API_BASE_URL}/transactions/user/${user.id}`);
         if (res.ok) {
             const transactions = await res.json();
             
