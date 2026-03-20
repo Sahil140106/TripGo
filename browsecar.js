@@ -311,8 +311,14 @@ function renderCars() {
                             <p class="car-meta">${location} | ${fuelType}</p>
                             <div class="price-rating">
                                 <span class="price">₹${price}<span>/day</span></span>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="view-btn" style="flex: 1; background: #0ea5e9;" onclick="openModal(this.closest('.car-card'))">Details</button>
+                                <button class="view-btn" style="flex: 1; ${status !== 'AVAILABLE' ? 'background: #94a3b8; cursor: not-allowed;' : 'background: var(--primary-gradient);'}" 
+                                        ${status !== 'AVAILABLE' ? 'disabled' : ''}
+                                        onclick="handleBooking('${name}')">
+                                    ${status !== 'AVAILABLE' ? (status === 'BOOKED' ? 'Booked' : status) : 'Book Now'}
+                                </button>
                             </div>
-                            <button class="view-btn" onclick="openModal(this.closest('.car-card'))">Details</button>
                         </div>
                     </div>
                 `;
