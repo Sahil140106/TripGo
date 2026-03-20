@@ -701,6 +701,27 @@ async function deleteVehicle() {
     }
 }
 
+async function resetDatabase() {
+    if (confirm("⚠️ CRITICAL ACTION: Are you sure you want to RESET the entire database? This will delete all bookings, reviews, and user-listed cars. This cannot be undone.")) {
+        if (confirm("FINAL CONFIRMATION: Are you absolutely sure?")) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/system/reset`, { method: 'POST' });
+                if (response.ok) {
+                    const msg = await response.text();
+                    alert("✅ SUCCESS: " + msg);
+                    window.location.reload(); // Refresh to show clean state
+                } else {
+                    const err = await response.text();
+                    alert("❌ FAILED: " + err);
+                }
+            } catch (err) {
+                console.error("Reset error:", err);
+                alert("❌ ERROR: Could not connect to the server for reset.");
+            }
+        }
+    }
+}
+
 // Initial Load
 document.addEventListener('DOMContentLoaded', function() {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -747,4 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const deleteBtn = document.getElementById('delete-vehicle-btn');
     if (deleteBtn) deleteBtn.addEventListener('click', deleteVehicle);
+
+    const resetBtn = document.getElementById('btn-reset-db');
+    if (resetBtn) resetBtn.addEventListener('click', (e) => { e.preventDefault(); resetDatabase(); });
 });
