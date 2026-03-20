@@ -113,16 +113,39 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        if (imageFile) {
+        const compressImage = (file, callback) => {
             const reader = new FileReader();
-            reader.onload = function(event) {
-                submitCarData(event.target.result);
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Compress to JPEG with 0.7 quality
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    callback(dataUrl);
+                };
             };
-            reader.onerror = function(error) {
-                console.error('Error reading file:', error);
-                submitCarData(base64Image); // Use fallback on error
-            };
-            reader.readAsDataURL(imageFile);
+        };
+
+        if (imageFile) {
+            compressImage(imageFile, (compressedBase64) => {
+                submitCarData(compressedBase64);
+            });
         } else {
             submitCarData(base64Image); // No image selected
         }
