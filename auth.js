@@ -300,20 +300,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
                 });
-                const data = await response.json();
+                
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    data = { message: responseText };
+                }
 
                 if (response.ok) {
                     alert("OTP sent to " + email);
                     document.getElementById('otp-section').style.display = 'block';
                     sendOtpBtn.innerText = "Resend OTP";
                 } else {
-                    const errorText = await response.text();
-                    try {
-                        const data = JSON.parse(errorText);
-                        showAuthError(data.message || "Failed to send OTP.");
-                    } catch(e) {
-                         showAuthError("Server Error (" + response.status + "): " + errorText);
-                    }
+                    showAuthError(data.message || "Failed to send OTP.");
                 }
             } catch (err) {
                 showAuthError("Failed to send OTP: " + err.message);
@@ -407,7 +408,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
                 });
-                const data = await response.json();
+
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    data = { message: responseText };
+                }
 
                 if (response.ok) {
                     alert("OTP sent to " + email);
@@ -415,13 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sendResetOtpBtn.style.display = 'none';
                     verifyResetBtn.style.display = 'block';
                 } else {
-                    const errorText = await response.text();
-                    try {
-                        const data = JSON.parse(errorText);
-                        alert(data.message || "Failed to send OTP.");
-                    } catch(e) {
-                        alert("Server Error (" + response.status + "): " + errorText);
-                    }
+                    alert(data.message || "Failed to send OTP.");
                 }
             } catch (err) {
                 alert("Failed to send OTP.");
