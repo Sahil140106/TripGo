@@ -402,6 +402,22 @@ async function fetchDashboardStats() {
             
             const rentedEl = document.getElementById('stat-cars-rented');
             if (rentedEl) rentedEl.textContent = bookings.length.toLocaleString();
+
+            const handoverEl = document.getElementById('stat-handovers');
+            if (handoverEl) {
+                // Fetch latest handovers to count
+                const hRes = await fetch(`${baseUrl}/handovers`);
+                if (hRes.ok) {
+                    const hData = await hRes.json();
+                    const myHandovers = hData.filter(h => {
+                        const initiator = (h.renterEmail || '').toLowerCase();
+                        const taker = (h.takerEmail || '').toLowerCase();
+                        const me = (user.email || '').toLowerCase();
+                        return initiator === me || taker === me;
+                    });
+                    handoverEl.textContent = myHandovers.length.toLocaleString();
+                }
+            }
         } else {
             console.error("Failed to fetch bookings:", bookingsRes.status);
         }
