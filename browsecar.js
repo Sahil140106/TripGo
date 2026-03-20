@@ -2,6 +2,32 @@ let hMap;
 let hMarker;
 let hSelectedCoords = null;
 
+// Static Fallback Data
+const staticCars = [
+    { id: 's1', name: "BMW M3 Competition", type: "Luxury", pricePerDay: 5000, imageUrl: "https://hips.hearstapps.com/hmg-prod/images/2025-bmw-m3-111-66562de0157ab.jpg?crop=0.827xw:0.622xh;0.163xw,0.254xh&resize=1200:*", fuelType: "Petrol", location: "Mumbai", status: "AVAILABLE" },
+    { id: 's2', name: "Audi A6", type: "Sedan", pricePerDay: 3500, imageUrl: "https://imgcdn.oto.com.sg/large/gallery/exterior/16/164/audi-a6-avant-front-angle-low-view-237284.jpg?tr=w-510,h-340", fuelType: "Diesel", location: "Delhi", status: "AVAILABLE" },
+    { id: 's3', name: "Mahindra Thar", type: "SUV", pricePerDay: 2500, imageUrl: "https://spn-sta.spinny.com/blog/20230829170739/Spinny-Assured-Mahindra-Thar.webp", fuelType: "Diesel", location: "Mumbai", status: "AVAILABLE" },
+    { id: 's4', name: "Mercedes AMG", type: "Luxury", pricePerDay: 6000, imageUrl: "https://img-ik.cars.co.za/news-site-za/images/2021/02/mercedes-benz-c63-amg-3.jpg?tr=h-347,w-617,q-80", fuelType: "Petrol", location: "Bangalore", status: "AVAILABLE" }
+];
+
+// Helper to send emails via notification service
+async function sendEmail(email, subject, message) {
+    if (typeof NOTIFY_API_URL === 'undefined') {
+        console.warn("NOTIFY_API_URL is not defined in config.js");
+        return;
+    }
+    try {
+        await fetch(`${NOTIFY_API_URL}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, subject, message })
+        });
+        console.log("✅ Email notification sent to:", email);
+    } catch (err) {
+        console.warn("❌ Failed to send email notification:", err);
+    }
+}
+
 function initHandoverMap() {
     if (hMap) return;
     hMap = L.map('handoverMap').setView([20.5937, 78.9629], 5);
@@ -203,103 +229,100 @@ function checkHandoverParams() {
 
 let allCars = []; 
 
+window.addEventListener('error', function(e) {
+    console.error("Global Error (Caught):", e.message);
+});
+
 async function fetchCars() {
+    console.log("Fetching cars from:", CAR_API_URL);
     try {
         const response = await fetch(`${CAR_API_URL}`);
         if (response.ok) {
-            allCars = await response.json();
+            const data = await response.json();
+            if (data && data.length > 0) {
+                allCars = data;
+                console.log(`Successfully loaded ${allCars.length} cars from API.`);
+            } else {
+                console.warn("API returned empty car list. Using fallback.");
+                allCars = staticCars;
+            }
+            
+            // Diagnostic Overlay
+            const diag = document.createElement('div');
+            diag.id = 'diag-overlay';
+            diag.style = "position:fixed; bottom:70px; left:10px; background:rgba(0,0,0,0.8); color:chartreuse; padding:10px; z-index:10000; font-size:12px; border-radius:5px;";
+            diag.innerHTML = `Loaded: ${allCars.length} cars.<br>First 5: ${allCars.slice(0,5).map(c=>c.name).join(', ')}`;
+            document.body.appendChild(diag);
+
             renderCars();
-            filterCars(); // Apply filters immediately after rendering
+        } else {
+            console.error("Fetch cars failed with status:", response.status);
+            allCars = staticCars;
+            renderCars();
         }
     } catch (err) {
-        console.error("Fetch cars error:", err);
+        console.error("Fetch cars NETWORK error. Using fallback:", err);
+        allCars = staticCars;
+        renderCars();
+        // filterCars();
     }
 }
 
 function renderCars() {
     const carGrid = document.getElementById('carGrid');
-    if (!carGrid) return;
-
-    if (allCars.length === 0) {
-        carGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #64748b;">
-                <div style="font-size: 48px; margin-bottom: 20px;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>
-                <h3>No cars available at the moment.</h3>
-            </div>
-        `;
+    if (!carGrid) {
+        console.error("Element #carGrid not found!");
         return;
     }
 
-    const handoverCarModels = (window.allHandovers || []).map(h => h.carModel);
-
-    carGrid.innerHTML = allCars
-        .map(car => {
-            const price = car.pricePerDay || 0;
-            const name = car.name || "Unknown Car";
-            const location = car.location || "Various Locations";
-            const fuelType = car.fuelType || "Petrol/Diesel";
-            const carType = car.type || "SUV";
-            const img = car.imageUrl || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80';
-            
-            let status = (car.status || 'AVAILABLE').toUpperCase();
-            
-            // If car is listed for handover, mark it as unavailable in regular browse
-            if (handoverCarModels.includes(name)) {
-                status = 'UNAVAILABLE';
-            }
-
-            return `
-                <div class="car-card" data-id="${car.id}" data-price="${price}" data-type="${carType}" data-location="${location}" 
-                     data-owner="${car.ownerName || 'Unknown Owner'}" data-trans="${car.transmission || 'Manual'}" 
-                     data-seats="${car.seating || 5}" data-luggage="${car.luggage || 2}" data-deposit="${car.refundableDeposit || 0}" 
-                     data-fuel="${fuelType}" data-handover="${car.allowHandover !== false}" 
-                     data-fuel-included="${car.fuelChargesIncluded === true}" data-hub="${car.nearbyHub || 'Mumbai Central'}">
-                    <div class="car-image">
-                        <span class="badge ${status === 'AVAILABLE' ? 'available' : 'booked'}">${status}</span>
-                        <img src="${img}" alt="${name}">
-                    </div>
-                    <div class="car-info">
-                        <h3>${name}</h3>
-                        <p class="car-meta">
-                            <svg style="width: 14px; height: 14px; margin-right: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            ${location} &nbsp; 
-                            <svg style="width: 14px; height: 14px; margin-right: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22L17 22"></path><path d="M4 9L15 9"></path><path d="M14 22L14 11"></path><path d="M14 7L14 4"></path><path d="M14 4L5 4"></path><path d="M5 4L5 22"></path><path d="M15 9L21 9"></path><path d="M21 9L21 22"></path></svg>
-                            ${fuelType}
-                        </p>
-                        <div class="price-rating">
-                            <span class="price">₹${price}<span>/day</span></span>
-                            <span class="rating">
-                                <svg style="width: 14px; height: 14px; color: #f59e0b;" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                4.8
-                            </span>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="view-btn" ${status !== 'AVAILABLE' ? 'disabled style="background: #94a3b8; cursor: not-allowed; flex: 1;"' : 'style="flex: 1;"'}>
-                                ${status !== 'AVAILABLE' ? 'Unavailable' : 'Details'}
-                            </button>
-                            <button class="book-btn-direct" style="flex: 1; padding: 12px; border: none; border-radius: 10px; background: #10b981; color: white; font-weight: 700; cursor: pointer; ${status === 'AVAILABLE' ? '' : 'display: none;'}">
-                                Book Now
-                            </button>
-                        </div>
-                    </div>
+    try {
+        if (allCars.length === 0) {
+            carGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #64748b;">
+                    <h3>No cars available at the moment.</h3>
                 </div>
             `;
-        }).join('');
+            return;
+        }
 
-    // Re-attach event listeners
-    Array.from(carGrid.querySelectorAll('.view-btn')).forEach(btn => {
-        btn.addEventListener('click', function () {
-            if (!this.disabled) openModal(this.closest('.car-card'));
-        });
-    });
+        const handoverCarModels = (window.allHandovers || []).map(h => h.carModel);
 
-    Array.from(carGrid.querySelectorAll('.book-btn-direct')).forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            const name = this.closest('.car-card').querySelector('h3').textContent;
-            handleBooking(name);
-        });
-    });
+        carGrid.innerHTML = allCars
+            .map(car => {
+                const price = car.pricePerDay || 0;
+                const name = car.name || "Unknown Car";
+                const location = car.location || "N/A";
+                const fuelType = car.fuelType || "N/A";
+                const carType = car.type || "SUV";
+                const img = car.imageUrl || '';
+                
+                let status = (car.status || 'AVAILABLE').toUpperCase();
+                if (handoverCarModels.includes(name)) status = 'UNAVAILABLE';
+
+                return `
+                    <div class="car-card" data-id="${car.id}" data-price="${price}" data-type="${carType}" data-location="${location}" 
+                         data-name="${name}">
+                        <div class="car-image">
+                            <span class="badge ${status === 'AVAILABLE' ? 'available' : 'booked'}">${status}</span>
+                            ${img ? `<img src="${img}" alt="${name}">` : '<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#eee;">No Image</div>'}
+                        </div>
+                        <div class="car-info">
+                            <h3>${name}</h3>
+                            <p class="car-meta">${location} | ${fuelType}</p>
+                            <div class="price-rating">
+                                <span class="price">₹${price}<span>/day</span></span>
+                            </div>
+                            <button class="view-btn" onclick="openModal(this.closest('.car-card'))">Details</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            console.log("Render completed successfully.");
+    } catch (err) {
+        console.error("Render error:", err);
+        carGrid.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Render Error: ${err.message}</div>`;
+    }
 }
 
 function openModal(card) {
@@ -672,11 +695,26 @@ function switchBrowseView(view) {
 
 // Event Listeners Initialization
 document.addEventListener('DOMContentLoaded', async () => {
-    updateAllProfileIcons();
-    await fetchCars();
-    await fetchHandovers();
-    setupHandoverFilters();
-    checkHandoverParams();
+    console.log("DOMContentLoaded: Starting initialization...");
+    try {
+        if (typeof updateAllProfileIcons === 'function') {
+            try {
+                updateAllProfileIcons();
+            } catch (e) { console.warn("updateAllProfileIcons failed:", e); }
+        }
+        
+        await fetchCars();
+        await fetchHandovers();
+        
+        if (typeof setupHandoverFilters === 'function') setupHandoverFilters();
+        if (typeof checkHandoverParams === 'function') checkHandoverParams();
+    } catch (err) {
+        console.error("Initialization Error:", err);
+        const errDiv = document.createElement('div');
+        errDiv.style = "position:fixed;bottom:10px;right:10px;background:red;color:white;padding:10px;z-index:10000;font-size:12px;border-radius:5px;";
+        errDiv.textContent = "Initialization failed: " + err.message;
+        document.body.appendChild(errDiv);
+    }
 
     const maxPriceFilter = document.getElementById('maxPriceFilter');
     if (maxPriceFilter) maxPriceFilter.addEventListener('input', filterCars);
@@ -720,6 +758,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
             if (errorMsg) errorMsg.style.display = 'none';
 
+            const handoverLocation = document.getElementById('handoverLocation').value || document.getElementById('h-handover-location-select').value;
+            const handoverDestination = document.getElementById('handoverDestination').value || document.getElementById('h-destination-hub-display').value;
+            const costSharing = parseFloat(document.getElementById('handoverCostSharing').value) || 0;
+
             const payload = {
                 bookingId: parseInt(document.getElementById('formBookingId').value) || 0,
                 carModel: document.getElementById('formCarModel').value,
@@ -729,11 +771,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ownerEmail: document.getElementById('formOwnerEmail').value,
                 pickupDate: document.getElementById('h-handover-date').value,
                 returnDate: document.getElementById('h-handover-return-date').value,
-                pickupLocation: document.getElementById('handoverLocation').value,
-                destination: document.getElementById('handoverDestination').value,
-                costSharing: parseFloat(document.getElementById('handoverCostSharing').value),
+                pickupLocation: handoverLocation,
+                destination: handoverDestination,
+                costSharing: costSharing,
                 carImage: document.getElementById('formCarImage').value,
-                notes: document.getElementById('h-recipient-email').value // Reusing email for now or actual notes if available
+                notes: document.getElementById('h-recipient-email').value || "Handover Listing"
             };
 
             const apiHost = window.location.hostname || '127.0.0.1';
@@ -745,22 +787,62 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 if (response.ok) {
+                    const savedHandover = await response.json();
+                    
+                    // Send notification to System/Owner about new handover listing (Backend Message)
+                    try {
+                        const messagePayload = {
+                                recipientId: (JSON.parse(localStorage.getItem('user')) || {}).id, 
+                                senderId: 1,
+                                senderName: "TripGo System",
+                                senderEmail: "support@tripgo.com",
+                                carName: payload.carModel,
+                                origin: payload.pickupLocation,
+                                destination: payload.destination,
+                                startDate: payload.pickupDate,
+                                endDate: payload.returnDate,
+                                type: 'HANDOVER',
+                                bookingId: payload.bookingId
+                        };
+                        
+                        await fetch(`${MESSAGE_API_URL}/sendDirect`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(messagePayload)
+                        });
+                    } catch (mErr) { console.warn("Backend notification delayed:", mErr); }
+
+                    // Send actual Email via Brevo
+                    const hSubject = `TripGo: Car Listed for Handover - ${payload.carModel}`;
+                    const hMsg = `Hi ${payload.renterName},\n\n` +
+                                 `You have successfully listed ${payload.carModel} for Trip Handover.\n` +
+                                 `Journey: ${payload.pickupLocation} to ${payload.destination}\n` +
+                                 `Reward Point Sharing: ₹${Math.round(payload.costSharing)} / Day\n\n` +
+                                 `You will be notified once someone accepts your listing.`;
+                    
+                    await sendEmail(payload.renterEmail, hSubject, hMsg);
+
                     alert("Success! Your trip has been listed for handover.");
                     closeHandoverModal();
-                    fetchHandovers(); // Refresh the list
+                    if (typeof fetchHandovers === 'function') fetchHandovers();
                 } else {
                     const err = await response.text();
                     throw new Error(err || "Failed to list handover.");
                 }
             } catch (err) {
-                console.error("Handover Error:", err);
+                console.error("Handover Submission Error:", err);
                 if (errorMsg) {
-                    errorMsg.textContent = err.message;
+                    let userMsg = err.message;
+                    if (err.message.includes('fetch')) {
+                        userMsg = "Failed to connect to server. Please ensure the Backend (Spring Boot) is running on port 8080.";
+                    }
+                    errorMsg.textContent = userMsg;
                     errorMsg.style.display = 'block';
                 } else {
                     alert("Error: " + err.message);
                 }
-            } finally {
+            }
+ finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>

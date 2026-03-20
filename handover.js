@@ -1,3 +1,21 @@
+// Helper to send emails via notification service
+async function sendEmail(email, subject, message) {
+    if (typeof NOTIFY_API_URL === 'undefined') {
+        console.warn("NOTIFY_API_URL is not defined in config.js");
+        return;
+    }
+    try {
+        await fetch(`${NOTIFY_API_URL}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, subject, message })
+        });
+        console.log("✅ Email notification sent to:", email);
+    } catch (err) {
+        console.warn("❌ Failed to send email notification:", err);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
@@ -184,6 +202,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         })
                     });
                 }
+                
+                // Send actual Email via Brevo
+                const hSubject = handoverId ? `TripGo: Handover Listing Updated - ${formData.carModel}` : `TripGo: Car Listed for Handover - ${formData.carModel}`;
+                const hMsg = `Hi ${formData.renterName},\n\n` +
+                             `You have successfully ${handoverId ? 'updated' : 'listed'} ${formData.carModel} for Trip Handover.\n` +
+                             `Journey: ${formData.pickupLocation} to ${formData.destination}\n` +
+                             `Reward Point Sharing: ₹${Math.round(formData.costSharing)} / Day\n\n` +
+                             `You will be notified once someone accepts your listing.`;
+                
+                await sendEmail(formData.renterEmail, hSubject, hMsg);
+
                 alert(handoverId ? 'Success! Your handover listing has been updated.' : 'Car Listed for Handover Successfully!');
                 window.location.href = 'browsecar.html?mode=handover';
             } else {

@@ -1,5 +1,5 @@
 // TripGo Configuration
-const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname || window.location.protocol === 'file:')
     ? 'http://localhost:8080/api' 
     : 'https://tripgo-backend-34la.onrender.com/api'; 
 

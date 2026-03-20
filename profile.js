@@ -1092,16 +1092,20 @@ function renderHandovers() {
 
     const user = JSON.parse(localStorage.getItem('user'));
     const displayedHandovers = activeHandovers.filter(h => {
-        if (h.carModel.toLowerCase().includes('tata tiago') || h.carModel.toLowerCase().includes('tata tago')) return false;
+        // Removed hardcoded model exclusions to show all cars
+        // if (h.carModel.toLowerCase().includes('tata tiago') || h.carModel.toLowerCase().includes('tata tago')) return false;
         
         let meta = {};
         try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
         
         const initiatorEmail = (h.renterEmail || meta.initiatedByEmail || '').toLowerCase();
+        const takerEmail = (h.takerEmail || '').toLowerCase();
         const myEmail = (user.email || '').toLowerCase();
         
-        console.log(`DEBUG: Checking handover ${h.carModel} (#${h.id}). Initiator: ${initiatorEmail}, Me: ${myEmail}`);
-        return initiatorEmail === myEmail;
+        console.log(`DEBUG: Checking handover ${h.carModel} (#${h.id}). Initiator: ${initiatorEmail}, Taker: ${takerEmail}, Me: ${myEmail}`);
+        
+        // Show if I am the one who listed it OR the one who accepted it
+        return (initiatorEmail === myEmail) || (takerEmail === myEmail);
     });
 
     if (displayedHandovers.length === 0) {
@@ -1116,7 +1120,12 @@ function renderHandovers() {
     }
 
     handoversGrid.innerHTML = displayedHandovers.map(h => {
-        const isMine = true; // Since we filter for only our listings
+        let meta = {};
+        try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
+        const initiatorEmail = (h.renterEmail || meta.initiatedByEmail || '').toLowerCase();
+        const myEmail = (user.email || '').toLowerCase();
+        
+        const isMine = initiatorEmail === myEmail;
         let status = 'Listed';
         if (h.takerId) status = 'Booked';
 
@@ -1283,8 +1292,16 @@ async function openHandoverDetailsModal(id) {
 
     let meta = {};
     try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
-    const isMine = meta.initiatedByEmail === user.email;
+    
+    const myEmail = user.email.toLowerCase();
+    const initiatorEmail = (h.renterEmail || meta.initiatedByEmail || '').toLowerCase();
+    const takerEmail = (h.takerEmail || '').toLowerCase();
+    
+    const isMine = (initiatorEmail === myEmail);
+    const isTaker = (takerEmail === myEmail);
+    
     let status = (meta.status || 'LISTED').toUpperCase();
+    if (h.takerId) status = 'BOOKED';
     if (status === 'PENDING') status = 'LISTED';
 
     document.getElementById('hModalImage').src = h.carImage || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80';
@@ -1309,6 +1326,14 @@ async function openHandoverDetailsModal(id) {
         actionsDiv.innerHTML = `
             <button class="action-btn primary" style="flex: 1;" onclick="editHandoverListing(${id})">EDIT LISTING</button>
             <button class="action-btn secondary" style="flex: 1; border-color: #ef4444; color: #ef4444;" onclick="deleteHandoverListing(${id})">DELETE</button>
+        `;
+    } else if (isTaker) {
+        actionsDiv.innerHTML = `
+            <button class="action-btn primary" style="width: 100%; background: #10b981; color: white; border: none; border-radius: 12px; height: 50px; font-weight: 700; cursor: pointer;" 
+                    onclick="window.location.href='mailto:${h.renterEmail}?subject=Trip Handover Query: ${h.carModel}'">
+                CONTACT OWNER / RENTER
+            </button>
+            <button class="action-btn secondary" style="width: 100%; margin-top: 10px; border-radius: 12px; height: 45px; cursor: pointer;" onclick="closeHandoverDetailsModal()">CLOSE</button>
         `;
     } else if (status === 'LISTED' || status === 'PENDING') {
         actionsDiv.innerHTML = `
@@ -1748,70 +1773,6 @@ function initProfilePage() {
         };
     }
 
-    const handoverForm = document.getElementById('handoverForm');
-    if (handoverForm) {
-        handoverForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const user = JSON.parse(localStorage.getItem('user'));
-            const hData = {
-                carModel: document.getElementById('handover-car-name').value,
-                renterName: user.fullName,
-                adminId: 1,
-                bookingId: parseInt(document.getElementById('handover-booking-id').value) || 0,
-                renterEmail: user.email,
-                pickupLocation: document.getElementById('handover-pickup').value,
-                destination: document.getElementById('handover-destination').value,
-                pickupDate: document.getElementById('handover-pickup-date').value,
-                returnDate: document.getElementById('handover-return-date').value,
-                costSharing: parseFloat(document.getElementById('handover-cost').value),
-                notes: JSON.stringify({ status: "LISTED", initiatedByEmail: user.email })
-            };
-            try {
-                const apiHost = window.location.hostname || '127.0.0.1';
-                const res = await fetch(`http://${apiHost}:8080/api/handovers/store`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(hData)
-                });
-                if (res.ok) {
-                    const savedHandover = await res.json();
-                    
-                    // Send notification to System/Owner about new handover listing
-                    const apiHost = window.location.hostname || '127.0.0.1';
-                    await fetch(`http://${apiHost}:8080/api/messages/sendDirect`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            recipientId: user.id, // Notifying self for confirmation
-                            senderId: 1,
-                            senderName: "TripGo System",
-                            senderEmail: "support@tripgo.com",
-                            carName: hData.carModel,
-                            origin: hData.pickupLocation,
-                            destination: hData.destination,
-                            startDate: hData.pickupDate,
-                            endDate: hData.returnDate,
-                            type: 'HANDOVER'
-                        })
-                    });
-
-                    // Send Confirmation Email to Renter
-                    const hSubject = `TripGo: Car Listed for Handover - ${hData.carModel}`;
-                    const hMsg = `Hi ${user.fullName},\n\n` +
-                                 `You have successfully listed ${hData.carModel} for Trip Handover.\n` +
-                                 `Journey: ${hData.pickupLocation} to ${hData.destination}\n` +
-                                 `Reward Point Sharing: ₹${hData.costSharing}\n\n` +
-                                 `You will be notified once someone accepts your listing.`;
-                    await sendEmail(user.email, hSubject, hMsg);
-
-                    alert('Car listed for Handover!');
-                    document.getElementById('initiateHandoverModal').classList.remove('active');
-                    if (typeof fetchHandovers === 'function') fetchHandovers();
-                    fetchMessages(); // Refresh bell icon
-                }
-            } catch (err) { console.error(err); }
-        };
-    }
 
     // Sidebar Navigation Listeners
     const navMapping = {
