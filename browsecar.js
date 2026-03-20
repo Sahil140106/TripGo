@@ -308,12 +308,15 @@ function renderCars() {
                         </div>
                         <div class="car-info">
                             <h3>${name}</h3>
-                            <p class="car-meta">${location} | ${fuelType}</p>
-                            <div class="price-rating">
-                                <span class="price">₹${price}<span>/day</span></span>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="view-btn" style="flex: 1; background: #0ea5e9;" onclick="openModal(this.closest('.car-card'))">Details</button>
-                                <button class="view-btn" style="flex: 1; ${status !== 'AVAILABLE' ? 'background: #94a3b8; cursor: not-allowed;' : 'background: var(--primary-gradient);'}" 
+                            <p class="car-meta"><i class="fas fa-map-marker-alt"></i> ${location} | <i class="fas fa-gas-pump"></i> ${fuelType}</p>
+                            <p class="car-meta" style="margin-top: -10px;">Owner: ${car.ownerName || 'Rajesh Kumar'} | <i class="fas fa-briefcase"></i> Luggage: ${car.luggage || 2}</p>
+                            <div class="price-rating" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                                <span class="price" style="color: #2563eb; font-size: 20px; font-weight: 800;">₹${price}<span style="font-size: 13px; color: #64748b; font-weight: 400;">/day</span></span>
+                                <span class="rating" style="color: #f59e0b; font-weight: 700; font-size: 14px;"><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button class="view-btn" style="flex: 1; background: #2563eb; color: white;" onclick="openModal(this.closest('.car-card'))">Details</button>
+                                <button class="view-btn" style="flex: 1; ${status !== 'AVAILABLE' ? 'background: #94a3b8; cursor: not-allowed;' : 'background: #10b981; color: white;'}" 
                                         ${status !== 'AVAILABLE' ? 'disabled' : ''}
                                         onclick="handleBooking('${name}')">
                                     ${status !== 'AVAILABLE' ? (status === 'BOOKED' ? 'Booked' : status) : 'Book Now'}
