@@ -1977,3 +1977,105 @@ async function renderTransactions() {
     }
 }
 
+// --- Profile Picture Upload Logic ---
+function initProfilePictureUpload() {
+    const avatar = document.getElementById('profileAvatar');
+    const fileInput = document.getElementById('change-pic-input');
+
+    if (avatar && fileInput) {
+        avatar.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64Image = event.target.result;
+                // Add loading state
+                const originalHTML = avatar.innerHTML;
+                avatar.innerHTML = '<div class="profile-loading-spinner" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.7); border-radius: 50%;"><i class="fas fa-spinner fa-spin" style="color: #2563eb;"></i></div>';
+                
+                try {
+                    await uploadProfilePicture(base64Image);
+                } catch (err) {
+                    avatar.innerHTML = originalHTML;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+async function uploadProfilePicture(base64Image) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/update-profile-pic`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: user.email,
+                role: user.role || 'USER',
+                profilePic: base64Image
+            })
+        });
+
+        if (response.ok) {
+            // Update local storage
+            const updatedUser = { ...user, profilePic: base64Image };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            
+            // Update UI
+            updateAllProfileIcons();
+            
+            // Show success toast instead of alert for better UX
+            if (typeof showWowNotification === 'function') {
+                showWowNotification({
+                    type: 'CONFIRMATION',
+                    carName: 'Profile',
+                    senderName: 'System'
+                });
+            } else {
+                alert('Profile picture updated successfully!');
+            }
+        } else {
+            const error = await response.text();
+            alert('Failed to update profile picture: ' + error);
+        }
+    } catch (err) {
+        console.error('Error uploading profile picture:', err);
+        alert('An error occurred while uploading the profile picture.');
+        throw err;
+    }
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Profile JS Initializing...");
+    initProfilePictureUpload();
+    
+    // Check if other components need manual init
+    if (document.getElementById('stat-active-bookings')) {
+        fetchDashboardStats();
+    }
+    
+    if (document.getElementById('notificationBtn')) {
+        initNotifications();
+    }
+    
+    // Ensure initials/images are set immediately
+    updateAllProfileIcons();
+});
+
