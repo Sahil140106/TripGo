@@ -43,26 +43,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadHandoverForEdit(id) {
         try {
-            const response = await fetch(`${CAR_API_URL}/all`);
+            const response = await fetch(`${CAR_API_URL}/all`); // Fetching all handovers from listed cars endpoint might be confusing naming but following existing pattern
             if (response.ok) {
                 const handovers = await response.json();
                 const h = handovers.find(item => item.id == id);
                 if (h) {
                     document.getElementById('display-car-name').textContent = h.carModel;
-                    document.getElementById('handoverDate').value = h.pickupDate;
-                    document.getElementById('returnDate').value = h.returnDate;
-                    document.getElementById('pickupHub').value = h.pickupLocation;
-                    document.getElementById('destinationHub').value = h.destination;
-                    document.getElementById('costSlider').value = h.costSharing;
                     document.getElementById('display-car-img').src = h.carImage;
+                    
+                    // Pre-fill fields
+                    const handoverDateInput = document.getElementById('handoverDate');
+                    const pickupHubSelect = document.getElementById('pickupHub');
+                    const destinationHubSelect = document.getElementById('destinationHub');
+                    const returnDateInput = document.getElementById('returnDate');
+                    const costSliderInput = document.getElementById('costSlider');
+                    const notesTextarea = document.getElementById('notes');
+
+                    handoverDateInput.value = h.pickupDate;
+                    pickupHubSelect.value = h.pickupLocation;
+                    destinationHubSelect.value = h.destination;
+                    returnDateInput.value = h.returnDate;
+                    costSliderInput.value = h.costSharing;
                     
                     let meta = {};
                     try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
-                    document.getElementById('notes').value = meta.userNotes || '';
+                    notesTextarea.value = meta.userNotes || '';
                     
                     updateCostDisplay(h.costSharing);
                     
-                    // Update header
+                    // RESTRICTION: Only Hub and Date should be editable
+                    // Disable other fields
+                    destinationHubSelect.disabled = true;
+                    destinationHubSelect.style.background = '#f1f5f9';
+                    destinationHubSelect.style.cursor = 'not-allowed';
+
+                    returnDateInput.readOnly = true;
+                    returnDateInput.style.background = '#f1f5f9';
+                    returnDateInput.style.cursor = 'not-allowed';
+
+                    costSliderInput.disabled = true;
+                    costSliderInput.style.opacity = '0.6';
+                    costSliderInput.style.cursor = 'not-allowed';
+
+                    notesTextarea.readOnly = true;
+                    notesTextarea.style.background = '#f1f5f9';
+                    notesTextarea.style.cursor = 'not-allowed';
+
+                    // Update header and button
                     document.querySelector('h1').textContent = 'Edit Trip Handover';
                     document.querySelector('button[type="submit"]').textContent = 'Update Handover Listing';
                 }

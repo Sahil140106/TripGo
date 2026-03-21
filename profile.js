@@ -1394,9 +1394,13 @@ async function deleteHandoverListing(id) {
             closeHandoverDetailsModal();
             fetchHandovers();
         } else {
-            alert("Failed to delete listing.");
+            const errorMsg = await res.text();
+            alert("Warning: " + (errorMsg || "Failed to delete listing."));
         }
-    } catch (err) { console.error("Delete handover error:", err); }
+    } catch (err) { 
+        console.error("Delete handover error:", err);
+        alert("An error occurred while trying to delete the listing.");
+    }
 }
 
 function editHandoverListing(id) {
