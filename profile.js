@@ -2026,6 +2026,7 @@ async function uploadProfilePicture(base64Image) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                id: user.id,
                 email: user.email,
                 role: user.role || 'USER',
                 profilePic: base64Image
