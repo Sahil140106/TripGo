@@ -682,11 +682,11 @@ td {
     font-weight: 500;
 }
 
-.status.approved, .status.booked { background: #ecfdf5; color: #10b981; }
+.status.approved, .status.booked, .status.success, .status.active { background: #ecfdf5; color: #10b981; }
 .status.listed { background: #fef3c7; color: #d97706; }
 .status.pending { background: #fff8e1; color: #fbc02d; }
 .status.completed { background: #f1f2f6; color: #57606f; }
-.status.rejected { background: #ffebee; color: #e53935; }
+.status.rejected, .status.failed { background: #ffebee; color: #e53935; }
 .status.cancelled { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .status.handover { background: #eef2ff; color: #2563eb; border: 1px solid #c7d2fe; }
 

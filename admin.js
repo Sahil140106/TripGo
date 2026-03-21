@@ -621,8 +621,43 @@ function renderHandovers() {
     }).reverse().join('');
 }
 
+function renderTransactions() {
+    const paymentsBody = document.getElementById('all-payments-body');
+    const carsBody = document.getElementById('all-listed-cars-body');
+
+    if (paymentsBody) {
+        if (allPayments.length === 0) {
+            paymentsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">No payments found.</td></tr>';
+        } else {
+            paymentsBody.innerHTML = allPayments.map(p => `
+                <tr>
+                    <td>#${p.id}</td>
+                    <td>Booking #${p.bookingId}</td>
+                    <td><strong>₹${(parseFloat(p.amount) || 0).toLocaleString('en-IN')}</strong></td>
+                    <td><span class="status ${(p.status || 'pending').toLowerCase()}">${p.status || 'Pending'}</span></td>
+                </tr>
+            `).reverse().join('');
+        }
+    }
+
+    if (carsBody) {
+        if (myVehicles.length === 0) {
+            carsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">No cars listed.</td></tr>';
+        } else {
+            carsBody.innerHTML = myVehicles.map(v => `
+                <tr>
+                    <td><strong>${v.name}</strong></td>
+                    <td>${v.ownerName || 'Unknown'}</td>
+                    <td>₹${(v.pricePerDay || 0).toLocaleString('en-IN')}</td>
+                    <td><span class="status ${(v.status || 'pending').toLowerCase()}">${v.status || 'Active'}</span></td>
+                </tr>
+            `).reverse().join('');
+        }
+    }
+}
+
 function switchView(view) {
-    const views = ['dashboard-view', 'vehicles-view', 'bookings-view', 'handovers-view'];
+    const views = ['dashboard-view', 'vehicles-view', 'bookings-view', 'handovers-view', 'transactions-view'];
     views.forEach(v => {
         const el = document.getElementById(v);
         if (el) el.style.display = v === `${view}-view` ? 'block' : 'none';
@@ -632,7 +667,8 @@ function switchView(view) {
         'dashboard': 'btn-dashboard',
         'vehicles': 'btn-vehicles',
         'bookings': 'btn-bookings-nav',
-        'handovers': 'btn-handovers-nav'
+        'handovers': 'btn-handovers-nav',
+        'transactions': 'btn-transactions-nav'
     };
 
     Object.keys(navBtns).forEach(key => {
@@ -643,6 +679,9 @@ function switchView(view) {
     if (view === 'dashboard' || view === 'bookings') fetchDashboardStats();
     if (view === 'vehicles') fetchListedCars();
     if (view === 'handovers') fetchHandovers();
+    if (view === 'transactions') {
+        fetchDashboardStats().then(() => renderTransactions());
+    }
 }
 
 function openFullDetailsModal() {
@@ -746,6 +785,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const handBtn = document.getElementById('btn-handovers-nav');
     if (handBtn) handBtn.addEventListener('click', (e) => { e.preventDefault(); switchView('handovers'); });
+
+    const transBtn = document.getElementById('btn-transactions-nav');
+    if (transBtn) transBtn.addEventListener('click', (e) => { e.preventDefault(); switchView('transactions'); });
 
     // Modal Listeners
     const closeBooking = document.getElementById('closeBookingModal');

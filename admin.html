@@ -49,7 +49,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     <span>Messages</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" id="btn-transactions-nav">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10M16 3v4m-8-4v4"></path><path d="M3 12h18M16 16l2 2 4-4"></path></svg>
                     <span>Transactions</span>
                 </a>
@@ -201,6 +201,54 @@
                         <!-- All handovers will be loaded here -->
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div id="transactions-view" class="view-section" style="display: none;">
+            <div class="section-header-row" style="margin-bottom: 25px;">
+                <h3>System Transactions & Listed Cars</h3>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                <!-- Payments Column -->
+                <div class="recent-bookings">
+                    <h4 style="margin-bottom: 15px;">All Payments</h4>
+                    <div class="table-wrapper" style="box-shadow: none; border: 1px solid #f1f5f9;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ref ID</th>
+                                    <th>Booking</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-payments-body">
+                                <tr><td colspan="4" style="text-align: center; padding: 20px;">Loading payments...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Listed Cars Column -->
+                <div class="recent-bookings">
+                    <h4 style="margin-bottom: 15px;">User Listed Cars</h4>
+                    <div class="table-wrapper" style="box-shadow: none; border: 1px solid #f1f5f9;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Car Name</th>
+                                    <th>Owner</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-listed-cars-body">
+                                <tr><td colspan="4" style="text-align: center; padding: 20px;">Loading listings...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
         </div>
