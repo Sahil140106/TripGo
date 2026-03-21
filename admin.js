@@ -3,6 +3,73 @@
 let myVehicles = [];
 let allBookings = [];
 let allUsers = [];
+let lastSeenMessageId = null;
+
+// Notification Toast System
+function showWowNotification(m, customTitle = null, customType = null) {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    let type = customType || 'info';
+    let icon = '🔔';
+    let title = customTitle || 'Notification';
+
+    const mType = (m.type || '').toUpperCase();
+    if (mType === 'NEW_BOOKING' || mType === 'BOOKED' || mType === 'CONFIRMATION') {
+        type = 'success'; icon = '🚗'; title = 'Car Booked!';
+    } else if (mType === 'CANCELLATION') {
+        type = 'danger'; icon = '❌'; title = 'Booking Cancelled';
+    } else if (mType === 'HANDOVER_ACCEPTED' || mType === 'HANDOVER') {
+        type = 'success'; icon = '🤝'; title = 'Handover Update';
+    } else if (mType === 'EARLY_END_REQUEST') {
+        type = 'warning'; icon = '⏳'; title = 'Early Return Request';
+    } else if (mType === 'EARLY_COMPLETED') {
+        type = 'success'; icon = '🏁'; title = 'Trip Completed Early';
+    } else if (mType === 'CAR_LISTED') {
+        type = 'success'; icon = '✨'; title = 'New Car Listed';
+    } else if (mType === 'PROFILE_UPDATE') {
+        type = 'success'; icon = '👤'; title = 'Profile Updated';
+    } else if (mType === 'SYSTEM_SUCCESS') {
+        type = 'success'; icon = '✅'; title = 'System Success';
+    } else if (mType === 'SYSTEM_ERROR') {
+        type = 'danger'; icon = '❌'; title = 'System Error';
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon" style="font-size: 20px;">${icon}</div>
+        <div class="toast-content">
+            <div class="toast-title">${title} <span style="margin-left:auto; opacity:0.5; font-size:10px;">✕</span></div>
+            <div class="toast-message">${m.carName || m.message || 'System Update'}</div>
+            <div class="toast-time">Just Now</div>
+        </div>
+    `;
+
+    toast.onclick = (e) => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 500);
+    };
+
+    container.appendChild(toast);
+    
+    try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.volume = 0.2;
+        audio.play().catch(() => {});
+    } catch(e) {}
+
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 500);
+        }
+    }, 6000);
+}
 let allPayments = [];
 let carMap = {};
 let activeHandovers = [];
@@ -93,15 +160,15 @@ function initProfilePicChange() {
                         user.profilePic = base64;
                         localStorage.setItem('user', JSON.stringify(user));
                         updateAllProfileIcons();
-                        alert('Profile picture updated successfully!');
+                        showWowNotification({ message: 'Profile picture updated successfully!', type: 'PROFILE_UPDATE' });
                     } else {
                         const errorText = await response.text();
                         console.error("Profile pic update FAILED:", response.status, errorText);
-                        alert(`Failed to update profile picture: ${errorText}`);
+                        showWowNotification({ message: `Failed: ${errorText}`, type: 'SYSTEM_ERROR' });
                     }
                 } catch (err) {
                     console.error("Profile pic update NETWORK ERROR:", err);
-                    alert('An error occurred during network request. Please check if backend is running.');
+                    showWowNotification({ message: 'Network error. Check backend.', type: 'SYSTEM_ERROR' });
                 }
             };
             reader.readAsDataURL(file);
@@ -114,26 +181,31 @@ let notificationInterval = null;
 function initNotifications() {
     const notifBtn = document.getElementById('notificationBtn');
     const notifDropdown = document.getElementById('notificationDropdown');
-    const markReadBtn = document.getElementById('markAllRead');
+    const markAllRead = document.getElementById('markAllRead');
 
     if (notifBtn && notifDropdown) {
         notifBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            notifDropdown.style.display = notifDropdown.style.display === 'block' ? 'none' : 'block';
+            notifDropdown.classList.toggle('active');
+            
+            // Add pulse effect on click
+            notifBtn.classList.add('pulse');
+            setTimeout(() => notifBtn.classList.remove('pulse'), 500);
         });
 
         document.addEventListener('click', () => {
-            notifDropdown.style.display = 'none';
+            notifDropdown.classList.remove('active');
         });
 
         notifDropdown.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    if (markReadBtn) {
-        markReadBtn.addEventListener('click', async () => {
+    if (markAllRead) {
+        markAllRead.addEventListener('click', async (e) => {
+            e.preventDefault();
             try {
                 const user = JSON.parse(localStorage.getItem('user'));
-                const res = await fetch(`${API_BASE_URL}/messages/renter/${user.id || 1}`);
+                const res = await fetch(`${API_BASE_URL}/messages/user/${user.id || 1}`); // Admin is usually 1
                 if (res.ok) {
                     const messages = await res.json();
                     const unread = messages.filter(m => !m.read);
@@ -157,6 +229,24 @@ async function fetchMessages() {
         const response = await fetch(`${API_BASE_URL}/messages/user/${user.id}`);
         if (response.ok) {
             const messages = await response.json();
+            
+            // Trigger Wow Notifications for brand new unread messages
+            const unread = messages.filter(m => !m.read);
+            if (unread.length > 0) {
+                const latestId = Math.max(...unread.map(m => m.id));
+                if (lastSeenMessageId !== null && latestId > lastSeenMessageId) {
+                    // Find the newest message that we haven't "toasted" yet
+                    const newMsg = unread.find(m => m.id === latestId);
+                    if (newMsg) showWowNotification(newMsg);
+                }
+                lastSeenMessageId = latestId;
+            } else {
+                // If all read, update lastSeen to latest message ID if any
+                if (messages.length > 0) {
+                    lastSeenMessageId = Math.max(...messages.map(m => m.id));
+                }
+            }
+
             updateNotificationBadge(messages);
             renderNotificationDropdown(messages);
         }
@@ -165,13 +255,28 @@ async function fetchMessages() {
 
 function updateNotificationBadge(messages) {
     const badge = document.getElementById('notifBadge');
+    const bellBtn = document.getElementById('notificationBtn');
     if (!badge) return;
+    
     const unreadCount = messages.filter(m => !m.read).length;
     if (unreadCount > 0) {
+        const hasIncreased = parseInt(badge.innerText) < unreadCount;
         badge.innerText = unreadCount;
         badge.style.display = 'flex';
+        
+        if (hasIncreased) {
+            badge.classList.remove('pop');
+            void badge.offsetWidth; // Trigger reflow
+            badge.classList.add('pop');
+            
+            if (bellBtn) {
+                bellBtn.classList.add('pulse-ring');
+            }
+        }
     } else {
+        badge.innerText = "0";
         badge.style.display = 'none';
+        if (bellBtn) bellBtn.classList.remove('pulse-ring');
     }
 }
 
@@ -230,16 +335,19 @@ async function handleRequestAction(bookingId, newEndDate, action) {
         
         const response = await fetch(url, { method: 'POST' });
         if (response.ok) {
-            alert(`Request ${action === 'approve' ? 'Accepted' : 'Rejected'} successfully!`);
+            showWowNotification({ 
+                message: `Request for #${bookingId} ${action === 'approve' ? 'Accepted' : 'Rejected'}!`, 
+                type: action === 'approve' ? 'HANDOVER_ACCEPTED' : 'CANCELLATION' 
+            });
             fetchMessages(); // Refresh UI
             fetchDashboardStats();
         } else {
             const err = await response.text();
-            alert("Action failed: " + err);
+            showWowNotification({ message: "Action failed: " + err, type: 'SYSTEM_ERROR' });
         }
     } catch (err) {
         console.error("Action error:", err);
-        alert("An error occurred.");
+        showWowNotification({ message: "An error occurred.", type: 'SYSTEM_ERROR' });
     }
 }
 
@@ -718,48 +826,51 @@ async function deleteVehicle() {
     if (confirm(`Are you sure you want to delete "${currentActiveVehicle.name}"? This action cannot be undone.`)) {
         try {
             const response = await fetch(`${API_BASE_URL}/cars/${currentActiveVehicle.id}`, { method: 'DELETE' });
-            if (response.ok) {
-                // Notify Admin
-                await fetch(`${API_BASE_URL}/messages/sendDirect`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        recipientId: 1, // Admin
-                        senderId: user.id || 1,
-                        senderName: user.fullName || "Admin",
-                        senderEmail: user.email || "admin@tripgo.com",
-                        carName: currentActiveVehicle.name,
-                        type: 'CAR_DELETED'
-                    })
-                });
-                alert("Vehicle deleted successfully!");
-                closeVehicleModal();
-                fetchListedCars();
-            } else { alert("Failed to delete vehicle."); }
-        } catch (err) { console.error("Delete error:", err); }
-    }
-}
-
-async function resetDatabase() {
-    if (confirm("⚠️ CRITICAL ACTION: Are you sure you want to RESET the entire database? This will delete all bookings, reviews, and user-listed cars. This cannot be undone.")) {
-        if (confirm("FINAL CONFIRMATION: Are you absolutely sure?")) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/system/reset`, { method: 'POST' });
                 if (response.ok) {
-                    const msg = await response.text();
-                    alert("✅ SUCCESS: " + msg);
-                    window.location.reload(); // Refresh to show clean state
-                } else {
-                    const err = await response.text();
-                    alert("❌ FAILED: " + err);
-                }
-            } catch (err) {
-                console.error("Reset error:", err);
-                alert("❌ ERROR: Could not connect to the server for reset.");
+                    // Notify Admin
+                    await fetch(`${API_BASE_URL}/messages/sendDirect`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            recipientId: 1, // Admin
+                            senderId: user.id || 1,
+                            senderName: user.fullName || "Admin",
+                            senderEmail: user.email || "admin@tripgo.com",
+                            carName: currentActiveVehicle.name,
+                            type: 'CAR_DELETED'
+                        })
+                    });
+                    showWowNotification({ message: `"${currentActiveVehicle.name}" deleted!`, type: 'CANCELLATION' });
+                    closeVehicleModal();
+                    fetchListedCars();
+                } else { showWowNotification({ message: "Failed to delete vehicle.", type: 'SYSTEM_ERROR' }); }
+            } catch (err) { 
+                console.error("Delete error:", err); 
+                showWowNotification({ message: "Error deleting vehicle.", type: 'SYSTEM_ERROR' });
             }
         }
     }
-}
+    
+    async function resetDatabase() {
+        if (confirm("⚠️ CRITICAL ACTION: Are you sure you want to RESET the entire database? This will delete all bookings, reviews, and user-listed cars. This cannot be undone.")) {
+            if (confirm("FINAL CONFIRMATION: Are you absolutely sure?")) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/system/reset`, { method: 'POST' });
+                    if (response.ok) {
+                        const msg = await response.text();
+                        showWowNotification({ message: "Database Reset Successful!", type: 'SYSTEM_SUCCESS' });
+                        setTimeout(() => window.location.reload(), 2000); // Wait for toast
+                    } else {
+                        const err = await response.text();
+                        showWowNotification({ message: "Reset Failed: " + err, type: 'SYSTEM_ERROR' });
+                    }
+                } catch (err) {
+                    console.error("Reset error:", err);
+                    showWowNotification({ message: "Server error during reset.", type: 'SYSTEM_ERROR' });
+                }
+            }
+        }
+    }
 
 // Initial Load
 document.addEventListener('DOMContentLoaded', function() {
