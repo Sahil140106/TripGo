@@ -336,7 +336,7 @@ async function fetchDashboardStats() {
         const userRes = await fetch(`${baseUrl}/auth/users/${user.id}`);
         if (userRes.ok) {
             const userData = await userRes.json();
-            const points = userData.tripPoints || 0;
+            const points = Number(userData.tripPoints || 0);
             
             // Update Dashboard/Stats if elements exist
             const pointsEl = document.getElementById('stat-trip-points');
