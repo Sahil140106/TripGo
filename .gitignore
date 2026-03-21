@@ -27,7 +27,7 @@ notification-service/serviceAccountKey.json
 .DS_Store
 
 # Misc
-backend/target/
+backend/
 START_ALL.bat
 notification-service/start-service.bat
 temp/
