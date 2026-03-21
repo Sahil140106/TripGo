@@ -1586,8 +1586,8 @@ function renderMessages(messages) {
                             ${generateInitials(m.senderName)}
                         </div>
                         <div>
-                            <p style="margin: 0; font-weight: 700; color: #1e293b; font-size: 15px;">${m.senderName}</p>
-                            <p style="margin: 2px 0 0 0; font-size: 13px; color: #64748b;">${m.senderEmail}</p>
+                            <p style="margin: 0; font-weight: 700; color: #1e293b; font-size: 15px;">${m.senderName && m.senderName !== 'null' ? m.senderName : 'Anonymous User'}</p>
+                            <p style="margin: 2px 0 0 0; font-size: 13px; color: #64748b;">${m.senderEmail && m.senderEmail !== 'null' ? m.senderEmail : 'N/A'}</p>
                         </div>
                     </div>
                 </div>
