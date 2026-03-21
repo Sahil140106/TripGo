@@ -1579,7 +1579,7 @@ function renderMessages(messages) {
                 <div style="background: #f8fafc; padding: 18px; border-radius: 12px; border: 1px solid #f1f5f9;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <p style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">${isConfirmation ? 'SYSTEM NOTIFICATION' : 'CONTACT DETAILS'}</p>
-                        ${!isConfirmation ? `<button onclick="openUserProfile(${m.senderId})" style="background: #2563eb; color: white; border: none; padding: 4px 12px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600; transition: background 0.2s;">View Profile</button>` : ''}
+                        ${!isConfirmation ? `<button onclick="openUserProfile(${m.senderId || 0})" style="background: #2563eb; color: white; border: none; padding: 4px 12px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600; transition: background 0.2s;">View Profile</button>` : ''}
                     </div>
                     <div style="display: flex; gap: 12px; align-items: center;">
                          <div style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #475569; font-size: 14px;">
@@ -1712,10 +1712,10 @@ async function openUserProfile(userId, journeyInfo = null) {
         }
     }
 
-    if (!userId) {
-        document.getElementById('userModalName').textContent = 'Unknown User';
-        document.getElementById('userModalEmail').textContent = 'N/A';
-        document.getElementById('userModalAvatar').innerHTML = '?';
+    if (!userId || userId === 'null' || userId === 'undefined' || userId === 0) {
+        document.getElementById('userModalName').textContent = 'TripGo System';
+        document.getElementById('userModalEmail').textContent = 'support@tripgo.com';
+        document.getElementById('userModalAvatar').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
         return;
     }
 
