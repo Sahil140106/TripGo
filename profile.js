@@ -432,6 +432,9 @@ async function fetchDashboardStats() {
             console.error("Error fetching handovers:", e);
         }
 
+        // 4. Refresh Transactions
+        renderTransactions();
+
     } catch (err) {
         console.error("Fatal error fetching dashboard stats:", err);
         showConnectionError("Could not connect to backend server. Please make sure it is running on port 8080.");
