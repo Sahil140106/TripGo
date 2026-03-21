@@ -317,7 +317,7 @@ function renderCars() {
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
                                 <button class="view-btn" style="flex: 1; background: #2563eb; color: white;" onclick="openModal(this.closest('.car-card'))">Details</button>
-                                <button class="view-btn" style="flex: 1; ${status !== 'AVAILABLE' ? 'background: #94a3b8; cursor: not-allowed;' : 'background: #10b981; color: white;'}" 
+                                <button class="view-btn" style="flex: 1; ${status !== 'AVAILABLE' ? 'background: #94a3b8; cursor: not-allowed; color: white;' : 'background: #10b981; color: white;'}" 
                                         ${status !== 'AVAILABLE' ? 'disabled' : ''}
                                         onclick="handleBooking('${name}')">
                                     ${status !== 'AVAILABLE' ? (status === 'BOOKED' ? 'Booked' : status) : 'Book Now'}

@@ -582,7 +582,9 @@ function renderRecentBookings(bookings, carMap) {
                                         !isHandover;
 
             const hasReviewed = (window.userReviews || []).some(r => parseInt(r.carId) === parseInt(booking.carId));
-            const canRate = statusValue === 'COMPLETED' && !hasReviewed;
+            // Only allow rating if trip is COMPLETED and NOT handed over by the original renter 
+            // (If handed over, the taker will rate it instead)
+            const canRate = statusValue === 'COMPLETED' && !hasReviewed && !isHandover;
 
             console.log(`PROFILE DEBUG: Booking ${booking.id} - StatusValue: ${statusValue}, StatusLabel: ${statusLabel}, allowHandover: ${car.allowHandover}, isHandover: ${isHandover}, CanInitiate: ${canInitiateHandover}, CanRate: ${canRate}`);
             
@@ -1355,7 +1357,26 @@ async function openHandoverDetailsModal(id) {
             <button class="action-btn secondary" style="flex: 1; border-color: #ef4444; color: #ef4444;" onclick="deleteHandoverListing(${id})">DELETE</button>
         `;
     } else if (isTaker) {
+        // Fetch trip status to see if it's completed
+        let rateButton = '';
+        try {
+            const bResp = await fetch(`${BOOKING_API_URL}/${h.bookingId}`);
+            if (bResp.ok) {
+                const bData = await bResp.json();
+                const hasReviewed = (window.userReviews || []).some(r => parseInt(r.carId) === parseInt(meta.carId || 0));
+                if (bData.status === 'COMPLETED' && !hasReviewed) {
+                    rateButton = `
+                        <button class="action-btn primary" style="width: 100%; background: #16a34a; color: white; border: none; border-radius: 12px; height: 50px; font-weight: 700; cursor: pointer; margin-bottom: 10px;" 
+                                onclick="closeHandoverDetailsModal(); openRateModal('${meta.carId || 0}', '${h.carModel.replace(/'/g, "\\'")}')">
+                            RATE THIS CAR
+                        </button>
+                    `;
+                }
+            }
+        } catch (e) { console.error("Failed to check booking status for rating:", e); }
+
         actionsDiv.innerHTML = `
+            ${rateButton}
             <button class="action-btn primary" style="width: 100%; background: #10b981; color: white; border: none; border-radius: 12px; height: 50px; font-weight: 700; cursor: pointer;" 
                     onclick="window.location.href='mailto:${h.renterEmail}?subject=Trip Handover Query: ${h.carModel}'">
                 CONTACT OWNER / RENTER
@@ -1588,10 +1609,23 @@ function renderMessages(messages) {
             </div>
             
             ${isEarlyEndReq ? `
-            <div style="display: flex; gap: 12px; margin-top: 15px;">
-                <button class="action-btn primary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; background: #16a34a; border: none;" onclick="approveEarlyEnd(${m.id}, ${m.bookingId}, '${m.endDate}', '${m.carId}', '${m.carName.replace(/'/g, "\\'")}')">Approve Request</button>
-                <button class="action-btn secondary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; color: #dc2626; border-color: #dc2626;" onclick="rejectEarlyEnd(${m.id})">Decline</button>
-            </div>` : ''}
+                ${m.status === 'ACCEPTED' ? `
+                    <div style="margin-top: 15px; padding: 10px; background: #f0fdf4; border-radius: 8px; color: #16a34a; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; border: 1px solid #bcf0da;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Early Completion Approved & Trip Completed
+                    </div>
+                ` : m.status === 'REJECTED' ? `
+                    <div style="margin-top: 15px; padding: 10px; background: #fef2f2; border-radius: 8px; color: #dc2626; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; border: 1px solid #fecaca;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        Request Declined
+                    </div>
+                ` : `
+                    <div style="display: flex; gap: 12px; margin-top: 15px;">
+                        <button class="action-btn primary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; background: #16a34a; border: none;" onclick="approveEarlyEnd(${m.id}, ${m.bookingId}, '${m.endDate}', '${m.carId}', '${m.carName.replace(/'/g, "\\'")}')">Approve Request</button>
+                        <button class="action-btn secondary" style="padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; color: #dc2626; border-color: #dc2626;" onclick="rejectEarlyEnd(${m.id})">Decline</button>
+                    </div>
+                `}
+            ` : ''}
 
             ${isPrompt ? `
             <div style="display: flex; gap: 12px;">
@@ -1628,7 +1662,8 @@ async function approveEarlyEnd(messageId, bookingId, newEndDate, carId, carName)
             }
             // Mark the message as read
             await fetch(`${MESSAGE_API_URL}/${messageId}/read`, { method: 'PATCH' });
-            fetchMessages();
+            // Mark the message as read and accepted
+            fetchMessages(); 
             fetchDashboardStats();
         } else {
             const errText = await response.text();
