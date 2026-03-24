@@ -2139,9 +2139,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchDashboardStats();
     }
     
-    if (document.getElementById('notificationBtn')) {
-        initNotifications();
-    }
+    // if (document.getElementById('notificationBtn')) {
+    //     initNotifications();
+    // }
     
     // Ensure initials/images are set immediately
     updateAllProfileIcons();
