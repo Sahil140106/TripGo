@@ -49,8 +49,18 @@ function openBookingModal(booking) {
     
     // Fix View Invoice Button in Modal
     const modalInvoiceBtn = document.querySelector('.modal-actions .action-btn.primary');
-    if (modalInvoiceBtn && booking.id) {
-        modalInvoiceBtn.onclick = () => window.location.href = `invoice.html?id=${booking.id}`;
+    console.log("DEBUG: openBookingModal for", booking.car, "with ID:", booking.id);
+    
+    if (modalInvoiceBtn) {
+        if (booking.id && booking.id !== 'undefined') {
+            modalInvoiceBtn.onclick = () => window.location.href = `invoice.html?id=${booking.id}`;
+            modalInvoiceBtn.disabled = false;
+            modalInvoiceBtn.style.opacity = '1';
+        } else {
+            console.error("DEBUG: Missing booking ID for invoice link");
+            modalInvoiceBtn.onclick = () => alert("Invoice not available for this booking (ID missing).");
+            modalInvoiceBtn.style.opacity = '0.5';
+        }
     }
 }
 

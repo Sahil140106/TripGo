@@ -13,31 +13,40 @@ body { background: #f1f5f9; color: var(--text); padding: 40px 20px; }
 .btn-download { background: var(--primary); color: white; }
 
 .invoice-container { background: white; padding: 50px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); position: relative; }
-.invoice-container::before { content: ''; position: absolute; top: 0; left: 0; width: 30%; height: 30px; background: var(--primary); }
-.invoice-container::after { content: ''; position: absolute; top: 40px; right: 0; width: 30%; height: 10px; background: var(--primary); }
+.invoice-container::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 8px; background: var(--primary); }
 
-.header { display: flex; justify-content: space-between; margin-top: 20px; margin-bottom: 40px; }
-.invoice-title { font-size: 48px; font-weight: 800; }
-.company-details p { font-size: 13px; color: var(--muted); }
+.invoice-header-centered { text-align: center; margin-bottom: 30px; }
+.logo-wrapper { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.logo-centered { height: 45px; }
+.logo-text { font-size: 28px; font-weight: 800; color: var(--text); margin-left: 10px; }
+.invoice-title { font-size: 40px; font-weight: 900; letter-spacing: 2px; color: var(--primary); margin-top: 10px; }
+
+.header-split { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
+.comp-name { font-size: 16px !important; font-weight: 700; color: var(--text) !important; margin-bottom: 4px; }
+.company-details p { font-size: 13px; color: var(--muted); line-height: 1.4; }
 .header-right { text-align: right; }
-.logo { height: 35px; }
-.logo-text { font-size: 24px; font-weight: 700; margin-left: 10px; }
-.invoice-meta p { font-size: 13px; margin: 5px 0; }
+.invoice-meta p { font-size: 14px; margin: 4px 0; }
+.invoice-meta span { color: var(--muted); margin-right: 8px; }
 
 .divider { height: 10px; background: var(--primary); margin: 30px 0; }
 
 .billing-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
 .section-label { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
 .section-value { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
-.status-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 10px; }
+.status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 11px; text-transform: uppercase; background: #f1f5f9; color: var(--muted); }
+.status-badge.regular { background: #e0f2fe; color: #0369a1; }
+.status-badge.handover { background: #fef3c7; color: #92400e; }
+.status-badge.early-completion { background: #dcfce7; color: #166534; }
 
 .details-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-.details-table th { background: var(--primary); color: white; text-align: left; padding: 10px; font-size: 12px; }
-.details-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
-.details-table tfoot td { text-align: right; padding: 6px 10px; font-weight: 600; }
-.total-row td { font-size: 16px !important; color: var(--primary); padding-top: 15px !important; }
+.details-table th { background: #f8fafc; color: var(--text); text-transform: uppercase; letter-spacing: 1px; text-align: left; padding: 12px; font-size: 11px; border-bottom: 2px solid var(--primary); }
+.details-table td { padding: 15px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+.details-table tfoot td { text-align: right; padding: 8px 12px; font-weight: 600; color: var(--muted); }
+.total-row td { font-size: 18px !important; color: var(--primary); padding-top: 20px !important; border-bottom: none !important; font-weight: 800 !important; }
 
-.footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px; }
+.footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 30px; }
+.btn-back:hover, .btn-download:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+.btn-back { background: #f1f5f9; color: var(--text); }
 .payment-details h3 { font-size: 14px; margin-bottom: 8px; }
 .payment-details p { font-size: 12px; }
 .signature-section { text-align: center; }

@@ -3,14 +3,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     const bookingId = urlParams.get('id');
     const user = JSON.parse(localStorage.getItem('user'));
 
-    if (!bookingId) {
-        alert("Booking ID required.");
+    console.log("DEBUG: Loading invoice for booking ID:", bookingId);
+
+    if (!bookingId || bookingId === 'undefined') {
+        document.body.innerHTML = `<div style="text-align:center; padding:50px;">
+            <h2>Invoice Error</h2>
+            <p>Invalid or missing Booking ID.</p>
+            <button onclick="window.history.back()">Go Back</button>
+        </div>`;
         return;
     }
 
     try {
         const response = await fetch(`${BOOKING_API_URL}/${bookingId}`);
-        if (!response.ok) throw new Error("Booking not found");
+        if (!response.ok) {
+            console.error("DEBUG: Fetch failed for ID", bookingId, "Status:", response.status);
+            throw new Error(`Booking ${bookingId} not found`);
+        }
         const booking = await response.json();
 
         const carRes = await fetch(`${CAR_API_URL}/${booking.carId}`);
