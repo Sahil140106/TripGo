@@ -35,7 +35,8 @@ async function fetchUserBookings() {
 const bookingsGrid = document.getElementById('bookingsGrid');
 const statusFilter = document.getElementById('statusFilter');
 
-function goToInvoice(id) {
+window.goToInvoice = function(id) {
+    console.log("DEBUG: goToInvoice called with ID:", id);
     if (!id || id === 'undefined' || id === 'null') {
         alert("Invoice not available for this booking (ID is missing).");
         return;
