@@ -242,6 +242,13 @@ body {
     font-weight: 800 !important; 
 }
 
+.discount-row td {
+    color: #16a34a !important; /* Green for discount */
+}
+.discount-row #discountAmount {
+    font-weight: 800;
+}
+
 .footer-section { 
     display: flex; 
     justify-content: space-between; 

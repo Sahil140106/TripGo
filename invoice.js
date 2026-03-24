@@ -65,15 +65,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('refundableDeposit').textContent = `₹${(booking.refundableDeposit || 0).toLocaleString()}`;
         
         if (booking.deliveryCharge > 0) {
-            document.getElementById('deliveryRow').style.display = 'table-row';
-            document.getElementById('deliveryCharge').textContent = `₹${booking.deliveryCharge.toLocaleString()}`;
+            const deliveryRow = document.getElementById('deliveryRow');
+            if (deliveryRow) {
+                deliveryRow.style.display = 'table-row';
+                document.getElementById('deliveryCharge').textContent = `₹${booking.deliveryCharge.toLocaleString()}`;
+            }
         }
 
         if (booking.discountAmount > 0) {
-            document.getElementById('discountRow').style.display = 'table-row';
-            document.getElementById('discountAmount').textContent = `-₹${booking.discountAmount.toLocaleString()}`;
-            if (booking.promoCode) {
-                document.getElementById('promoCodeLabel').textContent = `(${booking.promoCode})`;
+            const dr = document.getElementById('discountRow');
+            if (dr) {
+                dr.style.display = 'table-row';
+                document.getElementById('discountAmount').textContent = `-₹${booking.discountAmount.toLocaleString()}`;
+                
+                const pcl = document.getElementById('promoCodeLabel');
+                if (pcl) {
+                    pcl.textContent = booking.promoCode ? `(Promo Code: ${booking.promoCode})` : "(Loyalty/System Discount)";
+                    pcl.style.color = "#22c55e";
+                    pcl.style.marginLeft = "10px";
+                    pcl.style.fontSize = "12px";
+                }
             }
         }
 
