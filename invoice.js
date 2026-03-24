@@ -81,7 +81,22 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('paymentStatus').textContent = booking.status || "SUCCESS";
 
     } catch (err) {
-        console.error(err);
-        alert("Load failed.");
+        console.error("FATAL ERROR in invoice.js:", err);
+        alert(`Load failed: ${err.message}. Please check if the backend server is running and the booking ID is correct.`);
+        
+        // Also show error on page
+        const container = document.getElementById('invoice');
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:50px; color:#ef4444;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size:48px; margin-bottom:20px;"></i>
+                    <h2>Oops! Something went wrong</h2>
+                    <p>${err.message}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin-top:10px;">Check console for details. Path: ${BOOKING_API_URL}/${bookingId}</p>
+                    <br>
+                    <button onclick="window.history.back()" style="padding:10px 20px; border-radius:8px; background:var(--primary); color:white; border:none; cursor:pointer;">Go Back</button>
+                </div>
+            `;
+        }
     }
 });
