@@ -1,0 +1,78 @@
+document.addEventListener('DOMContentLoaded', async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get('id');
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!bookingId) {
+        alert("Booking ID required.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${BOOKING_API_URL}/${bookingId}`);
+        if (!response.ok) throw new Error("Booking not found");
+        const booking = await response.json();
+
+        const carRes = await fetch(`${CAR_API_URL}/${booking.carId}`);
+        const car = carRes.ok ? await carRes.json() : { name: "Car Title" };
+
+        // Meta
+        document.getElementById('invNumber').textContent = `TG-${booking.id}`;
+        document.getElementById('invDate').textContent = new Date().toLocaleDateString('en-GB');
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB');
+
+        // User
+        document.getElementById('userName').textContent = user ? user.fullName : "Customer";
+        document.getElementById('userEmail').textContent = user ? user.email : "N/A";
+        document.getElementById('userAddress').textContent = user ? (user.address || "No address provided") : "N/A";
+        document.getElementById('signatureName').textContent = user ? user.fullName : "Customer";
+
+        // Status
+        let statusText = "REGULAR";
+        if (booking.isHandoverBooking) statusText = "HANDOVER";
+        if (booking.isEarlyCompleted) statusText = "EARLY COMPLETION";
+        const statusEl = document.getElementById('tripStatus');
+        statusEl.textContent = statusText;
+        statusEl.className = `status-badge ${statusText.toLowerCase().replace(' ', '-')}`;
+
+        // Table
+        const start = new Date(booking.startDate);
+        const end = new Date(booking.endDate);
+        const diffDays = Math.max(1, Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)));
+        const rate = booking.pricePerDay || 0;
+        const subtotal = rate * diffDays;
+
+        document.getElementById('rentalTableBody').innerHTML = `
+            <tr>
+                <td><strong>${car.name}</strong><br><small>Destination: ${booking.destination || 'N/A'}</small></td>
+                <td>${booking.startDate} to ${booking.endDate}</td>
+                <td>₹${rate.toLocaleString()}</td>
+                <td>${diffDays}</td>
+                <td>₹${subtotal.toLocaleString()}</td>
+            </tr>
+        `;
+
+        document.getElementById('rentalSubtotal').textContent = `₹${subtotal.toLocaleString()}`;
+        document.getElementById('refundableDeposit').textContent = `₹${(booking.refundableDeposit || 0).toLocaleString()}`;
+        
+        if (booking.deliveryCharge > 0) {
+            document.getElementById('deliveryRow').style.display = 'table-row';
+            document.getElementById('deliveryCharge').textContent = `₹${booking.deliveryCharge.toLocaleString()}`;
+        }
+
+        if (booking.discountAmount > 0) {
+            document.getElementById('discountRow').style.display = 'table-row';
+            document.getElementById('discountAmount').textContent = `-₹${booking.discountAmount.toLocaleString()}`;
+            if (booking.promoCode) {
+                document.getElementById('promoCodeLabel').textContent = `(${booking.promoCode})`;
+            }
+        }
+
+        document.getElementById('grandTotal').textContent = `₹${booking.totalAmount.toLocaleString()}`;
+        document.getElementById('paymentStatus').textContent = booking.status || "SUCCESS";
+
+    } catch (err) {
+        console.error(err);
+        alert("Load failed.");
+    }
+});

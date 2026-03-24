@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - TripGo</title>
+    <link rel="stylesheet" href="invoice.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="config.js"></script>
+</head>
+<body>
+    <div class="invoice-wrapper">
+        <div class="control-bar no-print">
+            <button onclick="window.history.back()" class="btn-back">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            <button onclick="window.print()" class="btn-download">
+                <i class="fa-solid fa-download"></i> Download PDF
+            </button>
+        </div>
+
+        <div class="invoice-container" id="invoice">
+            <div class="header">
+                <div class="header-left">
+                    <h1 class="invoice-title">INVOICE</h1>
+                    <div class="company-details">
+                        <p>TripGo Car Rentals</p>
+                        <p>Opp. Metro Station, Sector 21</p>
+                        <p>Gurugram, HR 122016</p>
+                        <p>support@tripgo.com</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="logo-container">
+                        <img src="logo-removebg-preview.png" alt="TripGo" class="logo">
+                        <span class="logo-text">Cars</span>
+                    </div>
+                    <div class="invoice-meta">
+                        <p><span>Invoice #</span> <strong id="invNumber">TG-001</strong></p>
+                        <p><span>Date</span> <strong id="invDate">March 24, 2026</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="billing-section">
+                <div class="bill-to">
+                    <p class="section-label">Bill To:</p>
+                    <p class="section-value" id="userName">...</p>
+                    <p class="section-label">Address</p>
+                    <p class="section-value" id="userAddress">...</p>
+                </div>
+                <div class="contact-info">
+                    <p class="section-label">Email</p>
+                    <p class="section-value" id="userEmail">...</p>
+                    <p class="section-label">Trip Status</p>
+                    <p class="section-value"><span id="tripStatus" class="status-badge">REGULAR</span></p>
+                </div>
+            </div>
+
+            <div class="details-section">
+                <h3>Trip Details:</h3>
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th>Car & Trip Info</th>
+                            <th>Period</th>
+                            <th>Daily Rate</th>
+                            <th>Days</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rentalTableBody"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">Rental Subtotal</td>
+                            <td id="rentalSubtotal">₹0</td>
+                        </tr>
+                        <tr id="deliveryRow" style="display: none;">
+                            <td colspan="4">Delivery Charge</td>
+                            <td id="deliveryCharge">₹0</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">Refundable Deposit</td>
+                            <td id="refundableDeposit">₹0</td>
+                        </tr>
+                        <tr id="discountRow" class="discount-row" style="display: none;">
+                            <td colspan="4">Discount <span id="promoCodeLabel"></span></td>
+                            <td id="discountAmount">₹0</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="4">Grand Total</td>
+                            <td id="grandTotal">₹0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="footer-section">
+                <div class="payment-details">
+                    <h3>Payment Status:</h3>
+                    <p>Status: <strong id="paymentStatus">SUCCESS</strong></p>
+                    <p>Transaction ID: <strong>TXN-TRIPGO-LIVE</strong></p>
+                </div>
+                <div class="signature-section">
+                    <p class="date-label">Date : <span id="currentDate">--</span></p>
+                    <div class="signature-line"></div>
+                    <p class="signature-name" id="signatureName">Authorized Signatory</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="invoice.js"></script>
+</body>
+</html>

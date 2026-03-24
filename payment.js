@@ -372,7 +372,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 pricePerDay: carPrice,
                 totalAmount: parseFloat(currentTotal),
                 destination: displayDest,
-                isHandoverBooking: booking.isHandoverBooking || false
+                isHandoverBooking: booking.isHandoverBooking || false,
+                discountAmount: (promoDiscount || 0) + (handoverDiscount || 0) + (pointsDiscount || 0),
+                promoCode: activePromoCode || null,
+                refundableDeposit: parseFloat(refundableDeposit) || 0,
+                deliveryCharge: parseFloat(deliveryCharge) || 0
             };
 
             const bookingResponse = await fetch(`${BOOKING_API_URL}/store`, {

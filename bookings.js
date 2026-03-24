@@ -46,6 +46,12 @@ function openBookingModal(booking) {
     statusElement.className = `detail-value status ${booking.status.toLowerCase()}`;
     
     document.getElementById('bookingModalOverlay').classList.add('active');
+    
+    // Fix View Invoice Button in Modal
+    const modalInvoiceBtn = document.querySelector('.modal-actions .action-btn.primary');
+    if (modalInvoiceBtn && booking.id) {
+        modalInvoiceBtn.onclick = () => window.location.href = `invoice.html?id=${booking.id}`;
+    }
 }
 
 function closeBookingModal() {
@@ -66,7 +72,7 @@ function renderBookings(bookingsToRender) {
     }
 
     bookingsGrid.innerHTML = bookingsToRender.map(booking => `
-        <div class="booking-card" onclick="openBookingModal({car: '${booking.car}', dates: '${booking.dates}', total: '${booking.total}', status: '${booking.status}', image: '${booking.image}'})">
+        <div class="booking-card" onclick="openBookingModal({id: '${booking.id}', car: '${booking.car}', dates: '${booking.dates}', total: '${booking.total}', status: '${booking.status}', image: '${booking.image}'})">
             <img src="${booking.image}" alt="${booking.car}" class="booking-card-image">
             <div class="booking-card-header">
                 <h3 class="booking-card-title">${booking.car}</h3>
@@ -83,7 +89,7 @@ function renderBookings(bookingsToRender) {
                 </div>
             </div>
             <div class="booking-card-footer">
-                <button class="booking-card-btn primary">View Details</button>
+                <button class="booking-card-btn primary" onclick="event.stopPropagation(); window.location.href='invoice.html?id=${booking.id}'">View Invoice</button>
                 <button class="booking-card-btn secondary">Contact</button>
             </div>
         </div>
