@@ -316,6 +316,15 @@ function logout() {
     window.location.href = 'login.html';
 }
 
+window.goToInvoice = function(id) {
+    console.log("DEBUG: profile.js goToInvoice called with ID:", id);
+    if (!id || id === 'undefined' || id === 'null') {
+        alert("Invoice not available for this booking (ID is missing).");
+        return;
+    }
+    window.location.href = `invoice.html?id=${id}`;
+}
+
 // Attach listeners to bell icons
 function initNotifications() {
     initNotificationBell();
@@ -622,6 +631,11 @@ function renderRecentBookings(bookings, carMap) {
                                 Rate this Car
                             </button>` 
                         : ''}
+                        <button class="action-btn primary" 
+                                style="display: block; width: 100%; margin-top: 8px; padding: 4px 8px; font-size: 11px; border-radius: 12px; background: #00aeef; color: white; border: none; cursor: pointer; font-weight: 600;" 
+                                onclick="event.stopPropagation(); goToInvoice('${booking.id}')">
+                            View Invoice
+                        </button>
                     </td>
                 </tr>
             `;
@@ -729,6 +743,17 @@ function openBookingModal(booking, carMap) {
 
     const modal = document.getElementById('bookingModalOverlay');
     if (modal) modal.classList.add('active');
+
+    // Link "View Invoice" Button
+    const modalInvoiceBtn = document.getElementById('modalInvoiceBtn');
+    if (modalInvoiceBtn) {
+        modalInvoiceBtn.onclick = () => goToInvoice(booking.id);
+        if (!booking.id || booking.id === 'undefined') {
+            modalInvoiceBtn.style.opacity = '0.5';
+        } else {
+            modalInvoiceBtn.style.opacity = '1';
+        }
+    }
 }
 
 async function cancelBooking() {
