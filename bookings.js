@@ -35,6 +35,14 @@ async function fetchUserBookings() {
 const bookingsGrid = document.getElementById('bookingsGrid');
 const statusFilter = document.getElementById('statusFilter');
 
+function goToInvoice(id) {
+    if (!id || id === 'undefined' || id === 'null') {
+        alert("Invoice not available for this booking (ID is missing).");
+        return;
+    }
+    window.location.href = `invoice.html?id=${id}`;
+}
+
 function openBookingModal(booking) {
     document.getElementById('modalCarImage').src = booking.image;
     document.getElementById('modalCar').textContent = booking.car;
@@ -52,14 +60,11 @@ function openBookingModal(booking) {
     console.log("DEBUG: openBookingModal for", booking.car, "with ID:", booking.id);
     
     if (modalInvoiceBtn) {
-        if (booking.id && booking.id !== 'undefined') {
-            modalInvoiceBtn.onclick = () => window.location.href = `invoice.html?id=${booking.id}`;
-            modalInvoiceBtn.disabled = false;
-            modalInvoiceBtn.style.opacity = '1';
-        } else {
-            console.error("DEBUG: Missing booking ID for invoice link");
-            modalInvoiceBtn.onclick = () => alert("Invoice not available for this booking (ID missing).");
+        modalInvoiceBtn.onclick = () => goToInvoice(booking.id);
+        if (!booking.id || booking.id === 'undefined') {
             modalInvoiceBtn.style.opacity = '0.5';
+        } else {
+            modalInvoiceBtn.style.opacity = '1';
         }
     }
 }
@@ -99,7 +104,7 @@ function renderBookings(bookingsToRender) {
                 </div>
             </div>
             <div class="booking-card-footer">
-                <button class="booking-card-btn primary" onclick="event.stopPropagation(); window.location.href='invoice.html?id=${booking.id}'">View Invoice</button>
+                <button class="booking-card-btn primary" onclick="event.stopPropagation(); goToInvoice('${booking.id}')">View Invoice</button>
                 <button class="booking-card-btn secondary">Contact</button>
             </div>
         </div>
