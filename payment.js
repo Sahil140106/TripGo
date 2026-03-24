@@ -372,6 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pricePerDay: carPrice,
                 totalAmount: parseFloat(currentTotal),
                 destination: displayDest,
+                origin: origin,
                 isHandoverBooking: booking.isHandoverBooking || false,
                 discountAmount: (promoDiscount || 0) + (handoverDiscount || 0) + (pointsDiscount || 0),
                 promoCode: activePromoCode || null,
