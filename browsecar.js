@@ -357,7 +357,9 @@ function openModal(card) {
     modalPrice.textContent = `₹${price}`;
 
     const destHubInput = document.getElementById('modalDestinationHub');
-    if (destHubInput) destHubInput.value = hub;
+    if (destHubInput) {
+        destHubInput.value = hub || 'Mumbai Central';
+    }
 
     modalMeta.innerHTML = `
         <span style="display: flex; align-items: center; gap: 4px;">
