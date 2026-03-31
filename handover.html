@@ -266,18 +266,11 @@
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                             Cost Sharing
                         </h2>
-                        <p style="color: var(--text-sub); font-size: 0.9rem; margin-top: -10px; margin-bottom: 15px;">Setting a fair price increases your chances of a quick handover.</p>
+                        <p style="color: var(--text-sub); font-size: 0.9rem; margin-top: -10px; margin-bottom: 15px;">Set a fair price for the next renter.</p>
                         
-                        <div class="cost-sharing-box">
-                            <label>Daily Cost Sharing (What the next renter pays)</label>
-                            <div class="cost-slider-container">
-                                <input type="range" id="costSlider" min="500" max="10000" step="100" style="width: 100%;">
-                                <div class="cost-display">
-                                    <span>₹<span id="costValueDisplay">2500</span> / Day</span>
-                                    <span style="color: #059669; font-size: 0.9rem;">~75% of original rate</span>
-                                </div>
-                            </div>
-                            <input type="hidden" id="finalCost" name="costSharing">
+                        <div class="input-group">
+                            <label>Daily Cost (What the next renter pays) ₹</label>
+                            <input type="number" id="finalCost" name="costSharing" placeholder="e.g. 2500" required>
                         </div>
                     </div>
 

@@ -43,52 +43,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadHandoverForEdit(id) {
         try {
-            const response = await fetch(`${CAR_API_URL}/all`); // Fetching all handovers from listed cars endpoint might be confusing naming but following existing pattern
+            const response = await fetch(`${HANDOVER_API_URL}/${id}`);
             if (response.ok) {
-                const handovers = await response.json();
-                const h = handovers.find(item => item.id == id);
+                const h = await response.json();
                 if (h) {
-                    document.getElementById('display-car-name').textContent = h.carModel;
-                    document.getElementById('display-car-img').src = h.carImage;
+                    // Update main display car details
+                    document.getElementById('display-car-name').textContent = h.carModel || 'Unknown Car';
+                    document.getElementById('display-car-img').src = h.carImage || '';
+                    document.getElementById('display-booking-id').textContent = `Booking ID: #${h.bookingId || 'N/A'}`;
+                    document.getElementById('display-owner-info').textContent = `Owner: ${h.ownerName || 'N/A'} (${h.ownerEmail || 'N/A'})`;
+
+                    // Pre-fill hidden fields
+                    document.getElementById('formCarId').value = h.carId || '';
+                    document.getElementById('formBookingId').value = h.bookingId || '';
+                    document.getElementById('formCarImage').value = h.carImage || '';
                     
                     // Pre-fill fields
                     const handoverDateInput = document.getElementById('handoverDate');
                     const pickupHubSelect = document.getElementById('pickupHub');
                     const destinationHubSelect = document.getElementById('destinationHub');
                     const returnDateInput = document.getElementById('returnDate');
-                    const costSliderInput = document.getElementById('costSlider');
+                    const finalCostInput = document.getElementById('finalCost');
                     const notesTextarea = document.getElementById('notes');
 
                     handoverDateInput.value = h.pickupDate;
                     pickupHubSelect.value = h.pickupLocation;
                     destinationHubSelect.value = h.destination;
                     returnDateInput.value = h.returnDate;
-                    costSliderInput.value = h.costSharing;
+                    finalCostInput.value = h.costSharing;
                     
                     let meta = {};
                     try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
                     notesTextarea.value = meta.userNotes || '';
                     
-                    updateCostDisplay(h.costSharing);
+                    // DO NOT DISABLE FIELDS: User wants to edit everything
                     
-                    // RESTRICTION: Only Hub and Date should be editable
-                    // Disable other fields
-                    destinationHubSelect.disabled = true;
-                    destinationHubSelect.style.background = '#f1f5f9';
-                    destinationHubSelect.style.cursor = 'not-allowed';
-
-                    returnDateInput.readOnly = true;
-                    returnDateInput.style.background = '#f1f5f9';
-                    returnDateInput.style.cursor = 'not-allowed';
-
-                    costSliderInput.disabled = true;
-                    costSliderInput.style.opacity = '0.6';
-                    costSliderInput.style.cursor = 'not-allowed';
-
-                    notesTextarea.readOnly = true;
-                    notesTextarea.style.background = '#f1f5f9';
-                    notesTextarea.style.cursor = 'not-allowed';
-
                     // Update header and button
                     document.querySelector('h1').textContent = 'Edit Trip Handover';
                     document.querySelector('button[type="submit"]').textContent = 'Update Handover Listing';
@@ -139,28 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Slider Logic
-    const costSlider = document.getElementById('costSlider');
-    const costValueDisplay = document.getElementById('costValueDisplay');
+    // Cost Sharing Logic (Simplified)
     const finalCost = document.getElementById('finalCost');
 
-    // Default to 75% of original price
-    const defaultCost = Math.round(pricePerDay * 0.75);
-    costSlider.value = defaultCost;
-    costSlider.max = pricePerDay; // Can't charge more than original
-    costSlider.min = Math.round(pricePerDay * 0.2); // At least 20%
-
-    updateCostDisplay(defaultCost);
-
-    costSlider.addEventListener('input', (e) => {
-        updateCostDisplay(e.target.value);
-    });
-
-    function updateCostDisplay(value) {
-        costValueDisplay.textContent = parseInt(value).toLocaleString();
-        finalCost.value = value;
-        const percentage = Math.round((value / pricePerDay) * 100);
-        document.querySelector('.cost-display span:last-child').textContent = `~${percentage}% of original rate`;
+    // Default to 75% of original price for NEW listings
+    if (!handoverId) {
+        const defaultCost = Math.round(pricePerDay * 0.75);
+        finalCost.value = defaultCost;
     }
 
     // Form Submission
@@ -173,20 +147,20 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Listing Car...';
 
         const formData = {
-            carModel: carName,
+            carModel: document.getElementById('display-car-name').textContent,
             renterName: user.fullName || 'User',
             renterEmail: user.email,
-            ownerName: ownerName,
-            ownerEmail: ownerEmail,
+            ownerName: document.getElementById('display-owner-info').textContent.split('(')[0].replace('Owner: ', '').trim(),
+            ownerEmail: document.getElementById('display-owner-info').textContent.includes('(') ? document.getElementById('display-owner-info').textContent.split('(')[1].replace(')', '').trim() : '',
             pickupDate: document.getElementById('handoverDate').value,
             returnDate: document.getElementById('returnDate').value,
             pickupLocation: document.getElementById('pickupHub').value,
             destination: document.getElementById('destinationHub').value,
             costSharing: parseFloat(finalCost.value),
-            carImage: carImage,
+            carImage: document.getElementById('display-car-img').src,
             notes: JSON.stringify({
                 userNotes: document.getElementById('notes').value,
-                status: 'LISTED',
+                status: handoverId ? 'UPDATED' : 'LISTED',
                 initiatedByEmail: user.email
             })
         };
