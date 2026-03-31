@@ -1453,7 +1453,74 @@ async function deleteHandoverListing(id) {
 }
 
 function editHandoverListing(id) {
-    window.location.href = `handover.html?handoverId=${id}`;
+    openEditHandoverModal(id);
+}
+
+function openEditHandoverModal(id) {
+    const h = activeHandovers.find(item => item.id == id);
+    if (!h) return;
+
+    let meta = {};
+    try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
+
+    document.getElementById('edit-h-id').value = id;
+    document.getElementById('edit-h-pickup-hub').value = h.pickupLocation || '';
+    document.getElementById('edit-h-dest-hub').value = h.destination || '';
+    document.getElementById('edit-h-pickup-date').value = h.pickupDate || '';
+    document.getElementById('edit-h-return-date').value = h.returnDate || '';
+    document.getElementById('edit-h-cost').value = h.costSharing || '';
+    document.getElementById('edit-h-notes').value = meta.userNotes || '';
+
+    document.getElementById('editHandoverModalOverlay').classList.add('active');
+    closeHandoverDetailsModal(); // Close view modal if open
+}
+
+function closeEditHandoverModal() {
+    document.getElementById('editHandoverModalOverlay').classList.remove('active');
+}
+
+async function submitHandoverEdit(e) {
+    e.preventDefault();
+    const id = document.getElementById('edit-h-id').value;
+    const h = activeHandovers.find(item => item.id == id);
+    if (!h) return;
+
+    let meta = {};
+    try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
+
+    const updatedData = {
+        ...h, // Keep existing car details
+        pickupLocation: document.getElementById('edit-h-pickup-hub').value,
+        destination: document.getElementById('edit-h-dest-hub').value,
+        pickupDate: document.getElementById('edit-h-pickup-date').value,
+        returnDate: document.getElementById('edit-h-return-date').value,
+        costSharing: parseFloat(document.getElementById('edit-h-cost').value),
+        notes: JSON.stringify({
+            ...meta,
+            userNotes: document.getElementById('edit-h-notes').value,
+            status: 'UPDATED'
+        })
+    };
+
+    try {
+        const response = await fetch(`${HANDOVER_API_URL}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+        });
+
+        if (response.ok) {
+            alert("Handover listing updated successfully!");
+            closeEditHandoverModal();
+            fetchHandovers();
+        } else {
+            const err = await response.text();
+            alert("Error updating listing: " + err);
+        }
+    } catch (err) {
+        console.error("Update handover error:", err);
+        alert("Failed to connect to server.");
+    }
 }
 
 // --- View Switching ---
@@ -1870,6 +1937,11 @@ function initProfilePage() {
                 }
             } catch (err) { console.error(err); }
         };
+    }
+
+    const handoverEditForm = document.getElementById('editHandoverForm');
+    if (handoverEditForm) {
+        handoverEditForm.onsubmit = submitHandoverEdit;
     }
 
 

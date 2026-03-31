@@ -391,7 +391,7 @@
 
 
 
-    <!-- Handover Details Modal (For viewing and editing) -->
+    <!-- Handover Details Modal (For viewing) -->
     <div class="booking-modal-overlay" id="handoverDetailsModalOverlay">
         <div class="booking-modal" style="max-width: 500px;">
             <div class="booking-modal-header">
@@ -431,6 +431,70 @@
                 <div class="modal-actions" id="hModalActions">
                     <!-- Dynamic buttons: Accept, Edit, Delete -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Handover Modal (For owners to modify their listing) -->
+    <div class="booking-modal-overlay" id="editHandoverModalOverlay">
+        <div class="booking-modal" style="max-width: 500px;">
+            <div class="booking-modal-header">
+                <h2>Edit Handover Details</h2>
+                <button class="modal-close" onclick="closeEditHandoverModal()">×</button>
+            </div>
+            <div class="booking-modal-content">
+                <form id="editHandoverForm">
+                    <input type="hidden" id="edit-h-id">
+                    
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Pickup Hub (Where you'll leave the car)</label>
+                        <select id="edit-h-pickup-hub" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                            <option value="IGI Airport T3, Delhi">Indira Gandhi International Airport (T3)</option>
+                            <option value="New Delhi Railway Station">New Delhi Railway Station</option>
+                            <option value="Rajiv Chowk Metro Station">Rajiv Chowk Metro Station</option>
+                            <option value="Noida City Centre">Noida City Centre</option>
+                            <option value="Cyber Hub, Gurgaon">Cyber Hub, Gurgaon</option>
+                            <option value="Pune Airport">Pune Airport</option>
+                            <option value="Mumbai Central">Mumbai Central</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Destination Hub (Where the car belongs)</label>
+                        <select id="edit-h-dest-hub" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                            <option value="IGI Airport T3, Delhi">Indira Gandhi International Airport (T3)</option>
+                            <option value="New Delhi Railway Station">New Delhi Railway Station</option>
+                            <option value="Rajiv Chowk Metro Station">Rajiv Chowk Metro Station</option>
+                            <option value="Noida City Centre">Noida City Centre</option>
+                            <option value="Cyber Hub, Gurgaon">Cyber Hub, Gurgaon</option>
+                            <option value="Pune Airport">Pune Airport</option>
+                            <option value="Mumbai Central">Mumbai Central</option>
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                        <div class="input-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Pickup Date</label>
+                            <input type="date" id="edit-h-pickup-date" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        </div>
+                        <div class="input-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Return Date</label>
+                            <input type="date" id="edit-h-return-date" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Daily Cost (₹)</label>
+                        <input type="number" id="edit-h-cost" required style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Additional Notes</label>
+                        <textarea id="edit-h-notes" placeholder="Any specific instructions for the taker..." style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; height: 80px; resize: none;"></textarea>
+                    </div>
+
+                    <button type="submit" class="action-btn primary" style="width: 100%; height: 50px; font-weight: 700;">Save Listing Changes</button>
+                </form>
             </div>
         </div>
     </div>
