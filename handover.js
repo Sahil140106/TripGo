@@ -76,7 +76,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     try { meta = JSON.parse(h.notes || '{}'); } catch(e) {}
                     notesTextarea.value = meta.userNotes || '';
                     
-                    // DO NOT DISABLE FIELDS: User wants to edit everything
+                    // DO NOT DISABLE ALL FIELDS: User wants to edit everything EXCEPT Destination
+                    const destSelect = document.getElementById('destinationHub');
+                    destSelect.disabled = true;
+                    destSelect.style.background = '#f1f5f9';
+                    destSelect.style.cursor = 'not-allowed';
+                    destSelect.title = "The car must be returned to its registered hub.";
+                    
+                    if (!document.getElementById('hiddenDestination')) {
+                        const hiddenDest = document.createElement('input');
+                        hiddenDest.type = 'hidden';
+                        hiddenDest.name = 'destination';
+                        hiddenDest.id = 'hiddenDestination';
+                        hiddenDest.value = destSelect.value;
+                        document.getElementById('handoverForm').appendChild(hiddenDest);
+                    }
                     
                     // Update header and button
                     document.querySelector('h1').textContent = 'Edit Trip Handover';
@@ -116,16 +130,33 @@ document.addEventListener('DOMContentLoaded', () => {
         returnInput.title = "Handover must end on the original trip's return date.";
     }
 
-    // Pre-fill destination hub if possible
+    // Pre-fill destination hub if possible and LOCK it
     const hubToSet = carHub || carLocation;
     if (hubToSet) {
         const destSelect = document.getElementById('destinationHub');
+        let found = false;
         for (let i = 0; i < destSelect.options.length; i++) {
-            if (destSelect.options[i].value.includes(hubToSet) || hubToSet.includes(destSelect.options[i].value)) {
+            if (destSelect.options[i].value.toLowerCase().includes(hubToSet.toLowerCase()) || 
+                hubToSet.toLowerCase().includes(destSelect.options[i].value.toLowerCase())) {
                 destSelect.selectedIndex = i;
+                found = true;
                 break;
             }
         }
+        
+        // Lock destination hub as it must go back to its home hub
+        destSelect.disabled = true; 
+        destSelect.style.background = '#f1f5f9';
+        destSelect.style.cursor = 'not-allowed';
+        destSelect.title = "The car must be returned to its registered hub.";
+        
+        // Add a hidden input to ensure the value is sent with the form
+        const hiddenDest = document.createElement('input');
+        hiddenDest.type = 'hidden';
+        hiddenDest.name = 'destination';
+        hiddenDest.id = 'hiddenDestination';
+        hiddenDest.value = destSelect.value;
+        document.getElementById('handoverForm').appendChild(hiddenDest);
     }
 
     // Cost Sharing Logic (Simplified)
@@ -146,24 +177,24 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Listing Car...';
 
-        const formData = {
-            carModel: document.getElementById('display-car-name').textContent,
-            renterName: user.fullName || 'User',
-            renterEmail: user.email,
-            ownerName: document.getElementById('display-owner-info').textContent.split('(')[0].replace('Owner: ', '').trim(),
-            ownerEmail: document.getElementById('display-owner-info').textContent.includes('(') ? document.getElementById('display-owner-info').textContent.split('(')[1].replace(')', '').trim() : '',
-            pickupDate: document.getElementById('handoverDate').value,
-            returnDate: document.getElementById('returnDate').value,
-            pickupLocation: document.getElementById('pickupHub').value,
-            destination: document.getElementById('destinationHub').value,
-            costSharing: parseFloat(finalCost.value),
-            carImage: document.getElementById('display-car-img').src,
-            notes: JSON.stringify({
-                userNotes: document.getElementById('notes').value,
-                status: handoverId ? 'UPDATED' : 'LISTED',
-                initiatedByEmail: user.email
-            })
-        };
+    const formData = {
+        carModel: document.getElementById('display-car-name').textContent,
+        renterName: user.fullName || 'User',
+        renterEmail: user.email,
+        ownerName: document.getElementById('display-owner-info').textContent.split('(')[0].replace('Owner: ', '').trim(),
+        ownerEmail: document.getElementById('display-owner-info').textContent.includes('(') ? document.getElementById('display-owner-info').textContent.split('(')[1].replace(')', '').trim() : '',
+        pickupDate: document.getElementById('handoverDate').value,
+        returnDate: document.getElementById('returnDate').value,
+        pickupLocation: document.getElementById('pickupHub').value,
+        destination: document.getElementById('hiddenDestination') ? document.getElementById('hiddenDestination').value : document.getElementById('destinationHub').value,
+        carImage: document.getElementById('display-car-img').src,
+        costSharing: parseFloat(finalCost.value),
+        notes: JSON.stringify({
+            userNotes: document.getElementById('notes').value,
+            status: handoverId ? 'UPDATED' : 'LISTED',
+            initiatedByEmail: user.email
+        })
+    };
 
         if (new Date(formData.pickupDate) > new Date(formData.returnDate)) {
             alert('Error: Return date cannot be before pickup date.');
