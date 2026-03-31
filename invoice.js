@@ -30,10 +30,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('invDate').textContent = new Date().toLocaleDateString('en-GB');
         document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB');
 
-        // User
+        // User & Trip Locations
         document.getElementById('userName').textContent = user ? user.fullName : "Customer";
         document.getElementById('userEmail').textContent = user ? user.email : "N/A";
-        document.getElementById('userAddress').textContent = user ? (user.address || "No address provided") : "N/A";
+        
+        // Show Pickup Location as Address
+        const pickupAddr = booking.origin || car.nearbyHub || car.location || "N/A";
+        document.getElementById('userAddress').textContent = pickupAddr;
         document.getElementById('signatureName').textContent = user ? user.fullName : "Customer";
 
         // Status
