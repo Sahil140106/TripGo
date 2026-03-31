@@ -166,6 +166,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!handoverId) {
         const defaultCost = Math.round(pricePerDay * 0.75);
         finalCost.value = defaultCost;
+        
+        // Add hidden input for price as well since it's now disabled
+        const hiddenPrice = document.createElement('input');
+        hiddenPrice.type = 'hidden';
+        hiddenPrice.id = 'hiddenCost';
+        hiddenPrice.value = defaultCost;
+        document.getElementById('handoverForm').appendChild(hiddenPrice);
     }
 
     // Form Submission
@@ -188,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pickupLocation: document.getElementById('pickupHub').value,
         destination: document.getElementById('hiddenDestination') ? document.getElementById('hiddenDestination').value : document.getElementById('destinationHub').value,
         carImage: document.getElementById('display-car-img').src,
-        costSharing: parseFloat(finalCost.value),
+        costSharing: document.getElementById('hiddenCost') ? parseFloat(document.getElementById('hiddenCost').value) : parseFloat(finalCost.value),
         notes: JSON.stringify({
             userNotes: document.getElementById('notes').value,
             status: handoverId ? 'UPDATED' : 'LISTED',

@@ -1493,8 +1493,8 @@ async function submitHandoverEdit(e) {
         pickupLocation: document.getElementById('edit-h-pickup-hub').value,
         destination: h.destination, // Keep original destination - DO NOT PULL FROM DISABLED SELECT
         pickupDate: document.getElementById('edit-h-pickup-date').value,
-        returnDate: document.getElementById('edit-h-return-date').value,
-        costSharing: parseFloat(document.getElementById('edit-h-cost').value),
+        returnDate: h.returnDate, // Fixed
+        costSharing: h.costSharing, // Fixed
         notes: JSON.stringify({
             ...meta,
             userNotes: document.getElementById('edit-h-notes').value,
